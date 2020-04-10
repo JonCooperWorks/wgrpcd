@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package pb;
+
+service WireguardRPC {
+    rpc ChangeListenPort(ChangeListenPortRequest) returns (ChangeListenPortResponse) {}
+    rpc CreatePeer(CreatePeerRequest) returns (CreatePeerResponse) {}
+    rpc RekeyPeer(RekeyPeerRequest) returns (RekeyPeerResponse) {}
+    rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse) {}
+    rpc ListPeers(ListPeersRequest) returns (ListPeersResponse) {}
+}
+
+message ChangeListenPortRequest {
+    int32 listenPort = 1;
+}
+
+message ChangeListenPortResponse {
+    int32 newListenPort = 1;
+}
+
+message CreatePeerRequest {
+    repeated string allowedIPs = 1;
+}
+
+message CreatePeerResponse {
+    string privateKey = 1;
+    string publicKey = 2;
+    repeated string allowedIPs = 3;
+}
+
+message RekeyPeerRequest {
+    string publicKey = 1;
+    repeated string allowedIPs = 2;
+}
+
+message RekeyPeerResponse {
+    string privateKey = 1;
+    string publicKey = 2;
+    repeated string allowedIPs = 3;
+}
+
+
+message RemovePeerRequest {
+    string publicKey = 1;
+}
+
+message RemovePeerResponse {
+    bool removed = 1;
+}
+
+message ListPeersRequest {
+}
+
+message ListPeersResponse {
+    repeated Peer peers = 1;
+}
+
+message Peer {
+    string publicKey = 1;
+    repeated string allowedIPs = 2;
+    int64 receivedBytes = 3;
+    int64 transmittedBytes = 4;
+}
