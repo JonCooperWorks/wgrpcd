@@ -27,10 +27,9 @@ func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreateP
 		DeviceName: request.GetDeviceName(),
 	}
 
-	// TODO: parse IPs out of request.
-	allowedIPs := []net.IPNet{
-		mustParseCIDR("0.0.0.0/0"),
-		mustParseCIDR("::/0"),
+	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
+	if err != nil {
+		return nil, err
 	}
 
 	key, err := wgtypes.GeneratePrivateKey()
@@ -60,10 +59,9 @@ func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPee
 		return nil, err
 	}
 
-	// TODO: parse IPs out of request.
-	allowedIPs := []net.IPNet{
-		mustParseCIDR("0.0.0.0/0"),
-		mustParseCIDR("::/0"),
+	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
+	if err != nil {
+		return nil, err
 	}
 
 	publicKey, err := wgtypes.ParseKey(request.GetPublicKey())
@@ -167,15 +165,6 @@ func (w *WireguardRPCServer) Devices(ctx context.Context, request *pb.DevicesReq
 	return response, nil
 }
 
-func mustParseCIDR(address string) net.IPNet {
-	_, net, err := net.ParseCIDR(address)
-	if err != nil {
-		panic(err)
-	}
-
-	return *net
-}
-
 func ipsToString(ipNets []net.IPNet) []string {
 	ips := []string{}
 	for _, ip := range ipNets {
@@ -183,4 +172,16 @@ func ipsToString(ipNets []net.IPNet) []string {
 	}
 
 	return ips
+}
+
+func stringsToIPNet(cidrStrings []string) ([]net.IPNet, error) {
+	ipNets := []net.IPNet{}
+	for _, cidr := range cidrStrings {
+		_, ipNet, err := net.ParseCIDR(cidr)
+		if err != nil {
+			return nil, err
+		}
+		ipNets = append(ipNets, *ipNet)
+	}
+	return ipNets, nil
 }

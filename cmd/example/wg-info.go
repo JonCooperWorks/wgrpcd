@@ -35,10 +35,7 @@ func main() {
 	}
 
 	log.Println("Found devices: ", devices)
-	device, err := wireguard.New("wg0")
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+	device := &wireguard.Wireguard{DeviceName: "wg0"}
 
 	peers, err := device.Peers()
 	if err != nil {
