@@ -65,6 +65,7 @@ message Peer {
     repeated string allowedIPs = 2;
     int64 receivedBytes = 3;
     int64 transmittedBytes = 4;
+    int64 lastSeen = 5;
 }
 
 message DevicesRequest {}

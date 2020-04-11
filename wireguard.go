@@ -15,24 +15,6 @@ type Wireguard struct {
 	DeviceName string
 }
 
-// New creates an instance of the Wireguard controller.
-// It will return os.IsNotExist if the device does not exist.
-// It is best to use New instead of creating a struct directly, since it will make errors obvious earlier in your program.
-func New(name string) (*Wireguard, error) {
-	client, err := wgctrl.New()
-	if err != nil {
-		return nil, err
-	}
-	defer client.Close()
-
-	device, err := client.Device(name)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Wireguard{DeviceName: device.Name}, nil
-}
-
 func Devices() ([]*Wireguard, error) {
 	wireguardDevices := []*Wireguard{}
 	client, err := wgctrl.New()
