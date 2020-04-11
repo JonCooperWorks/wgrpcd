@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/joncooperworks/wireguardrpc/pb"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -30,7 +31,7 @@ func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreateP
 
 	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "an ip address in AllowedIPs is invalid, error: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "an ip address in AllowedIPs is invalid, error: %v", err)
 	}
 
 	key, err := wgtypes.GeneratePrivateKey()
@@ -65,12 +66,12 @@ func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPee
 
 	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "an ip address in AllowedIPs is invalid, error: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "an ip address in AllowedIPs is invalid, error: %v", err)
 	}
 
 	publicKey, err := wgtypes.ParseKey(request.GetPublicKey())
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "invalid public key: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid public key: %v", err)
 	}
 	peerConfig, err := wireguard.RekeyClient(allowedIPs, publicKey, key.PublicKey())
 	if err != nil {
@@ -95,7 +96,7 @@ func (w *WireguardRPCServer) RemovePeer(ctx context.Context, request *pb.RemoveP
 
 	publicKey, err := wgtypes.ParseKey(request.GetPublicKey())
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "invalid public key: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid public key: %v", err)
 	}
 	err = wireguard.RemovePeer(publicKey)
 	if err != nil {
@@ -149,7 +150,7 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 
 	port := int(request.GetListenPort())
 	if port < 0 || port > MaxPort {
-		return nil, status.Errorf(codes.FailedPrecondition, "error changing wireguard port: %v", ErrInvalidPort)
+		return nil, status.Errorf(codes.InvalidArgument, "error changing wireguard port: %v", ErrInvalidPort)
 	}
 	err := wireguard.ChangeListenPort(port)
 	if err != nil {
