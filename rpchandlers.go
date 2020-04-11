@@ -7,6 +7,8 @@ import (
 
 	"github.com/joncooperworks/wireguardrpc/pb"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -28,17 +30,20 @@ func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreateP
 
 	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "an ip address in AllowedIPs is invalid, error: %v", err)
 	}
 
 	key, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "error generating private key")
 	}
 
 	peerConfig, err := wireguard.AddNewPeer(allowedIPs, key.PublicKey())
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+		}
+		return nil, status.Errorf(codes.Internal, "error adding peer to wireguard interface: %v", err)
 	}
 
 	response := &pb.CreatePeerResponse{
@@ -55,21 +60,24 @@ func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPee
 	}
 	key, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "error generating private key")
 	}
 
 	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "an ip address in AllowedIPs is invalid, error: %v", err)
 	}
 
 	publicKey, err := wgtypes.ParseKey(request.GetPublicKey())
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid public key: %v", err)
 	}
 	peerConfig, err := wireguard.RekeyClient(allowedIPs, publicKey, key.PublicKey())
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+		}
+		return nil, status.Errorf(codes.Internal, "error rekeying peer: %v", err)
 	}
 
 	response := &pb.RekeyPeerResponse{
@@ -87,11 +95,14 @@ func (w *WireguardRPCServer) RemovePeer(ctx context.Context, request *pb.RemoveP
 
 	publicKey, err := wgtypes.ParseKey(request.GetPublicKey())
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "invalid public key: %v", err)
 	}
 	err = wireguard.RemovePeer(publicKey)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+		}
+		return nil, status.Errorf(codes.Internal, "error removing peer: %v", err)
 	}
 
 	response := &pb.RemovePeerResponse{
@@ -107,7 +118,10 @@ func (w *WireguardRPCServer) ListPeers(ctx context.Context, request *pb.ListPeer
 
 	devicePeers, err := wireguard.Peers()
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+		}
+		return nil, status.Errorf(codes.Internal, "error listing peers: %v", err)
 	}
 
 	peers := []*pb.Peer{}
@@ -135,11 +149,14 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 
 	port := int(request.GetListenPort())
 	if port < 0 || port > MaxPort {
-		return nil, ErrInvalidPort
+		return nil, status.Errorf(codes.FailedPrecondition, "error rekeying peer: %v", ErrInvalidPort)
 	}
 	err := wireguard.ChangeListenPort(port)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+		}
+		return nil, status.Errorf(codes.Internal, "error changing listen port: %v", err)
 	}
 
 	response := &pb.ChangeListenPortResponse{
@@ -151,7 +168,7 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 func (w *WireguardRPCServer) Devices(ctx context.Context, request *pb.DevicesRequest) (*pb.DevicesResponse, error) {
 	devices, err := Devices()
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "error listing devices: %v", err)
 	}
 
 	deviceNames := []string{}
