@@ -2,8 +2,7 @@ package main
 
 import (
 	"log"
-	"net"
-
+	
 	wireguard "github.com/joncooperworks/wireguardrpc"
 )
 
