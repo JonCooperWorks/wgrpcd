@@ -13,6 +13,7 @@ import (
 // Wireguard is an abstraction over wgctrl to ensure callers don't leave clients open.
 type Wireguard struct {
 	DeviceName string
+	ListenPort int
 }
 
 func Devices() ([]*Wireguard, error) {
@@ -29,7 +30,10 @@ func Devices() ([]*Wireguard, error) {
 	}
 
 	for _, device := range devices {
-		wireguardDevice := &Wireguard{DeviceName: device.Name}
+		wireguardDevice := &Wireguard{
+			DeviceName: device.Name,
+			ListenPort: device.ListenPort,
+		}
 		wireguardDevices = append(wireguardDevices, wireguardDevice)
 	}
 
@@ -58,6 +62,8 @@ func (w Wireguard) ChangeListenPort(port int) error {
 	config := wgtypes.Config{
 		ListenPort: &port,
 	}
+
+	w.ListenPort = port
 	return client.ConfigureDevice(device.Name, config)
 }
 

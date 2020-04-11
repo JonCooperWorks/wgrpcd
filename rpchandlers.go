@@ -143,7 +143,7 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 	}
 
 	response := &pb.ChangeListenPortResponse{
-		NewListenPort: request.GetListenPort(),
+		NewListenPort: int32(wireguard.ListenPort),
 	}
 	return response, nil
 }
