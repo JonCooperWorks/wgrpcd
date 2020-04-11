@@ -17,7 +17,6 @@ var (
 	ErrInvalidPort = fmt.Errorf("Port must be between 0 and %d", MaxPort)
 )
 
-// TODO: Expose operations on struct Wireguard as RPC operations.
 type WireguardRPCServer struct {
 	pb.UnimplementedWireguardRPCServer
 }

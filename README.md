@@ -15,6 +15,3 @@ They should instead generate a new private key if they ever need a new configura
 + Remove peer and revoke old private key
 + Change wireguard listen port
 + View registered peers
-
-### TODO
-+ HTTP RPC API in development, gRPC API in production
