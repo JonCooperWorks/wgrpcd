@@ -6,8 +6,8 @@ import (
 	"github.com/joncooperworks/wireguardrpc/pb"
 )
 
-// TODO: Expose operations on struct Wireguard as RPC operations.
 type WireguardRPCServer struct {
+	pb.UnimplementedWireguardRPCServer
 }
 
 func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreatePeerRequest) (*pb.CreatePeerResponse, error) {
