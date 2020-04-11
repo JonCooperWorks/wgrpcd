@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	listenPort = flag.String("listen-port", "8080", "-listen-port specifies the localhost port for clients to connect to.")
+	listenPort = flag.String("listen-port", "15002", "-listen-port specifies the localhost port for clients to connect to.")
 )
 
 func init() {
