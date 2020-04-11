@@ -2,7 +2,6 @@ package wireguardrpc
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 
@@ -14,10 +13,6 @@ import (
 
 const (
 	MaxPort = 65535
-)
-
-var (
-	ErrInvalidPort = fmt.Errorf("Port must be between 0 and %d", MaxPort)
 )
 
 type WireguardRPCServer struct {
@@ -42,7 +37,7 @@ func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreateP
 	peerConfig, err := wireguard.AddNewPeer(allowedIPs, key.PublicKey())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
 		}
 		return nil, status.Errorf(codes.Internal, "error adding peer to wireguard interface: %v", err)
 	}
@@ -76,7 +71,7 @@ func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPee
 	peerConfig, err := wireguard.RekeyClient(allowedIPs, publicKey, key.PublicKey())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
 		}
 		return nil, status.Errorf(codes.Internal, "error rekeying peer: %v", err)
 	}
@@ -101,7 +96,7 @@ func (w *WireguardRPCServer) RemovePeer(ctx context.Context, request *pb.RemoveP
 	err = wireguard.RemovePeer(publicKey)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
 		}
 		return nil, status.Errorf(codes.Internal, "error removing peer: %v", err)
 	}
@@ -120,7 +115,7 @@ func (w *WireguardRPCServer) ListPeers(ctx context.Context, request *pb.ListPeer
 	devicePeers, err := wireguard.Peers()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
 		}
 		return nil, status.Errorf(codes.Internal, "error listing peers: %v", err)
 	}
@@ -150,12 +145,12 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 
 	port := int(request.GetListenPort())
 	if port < 0 || port > MaxPort {
-		return nil, status.Errorf(codes.InvalidArgument, "error changing wireguard port: %v", ErrInvalidPort)
+		return nil, status.Errorf(codes.InvalidArgument, "port must be between 0 and %d", MaxPort)
 	}
 	err := wireguard.ChangeListenPort(port)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist.")
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
 		}
 		return nil, status.Errorf(codes.Internal, "error changing listen port: %v", err)
 	}
