@@ -149,7 +149,7 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 
 	port := int(request.GetListenPort())
 	if port < 0 || port > MaxPort {
-		return nil, status.Errorf(codes.FailedPrecondition, "error rekeying peer: %v", ErrInvalidPort)
+		return nil, status.Errorf(codes.FailedPrecondition, "error changing wireguard port: %v", ErrInvalidPort)
 	}
 	err := wireguard.ChangeListenPort(port)
 	if err != nil {
