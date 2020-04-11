@@ -8,10 +8,12 @@ service WireguardRPC {
     rpc RekeyPeer(RekeyPeerRequest) returns (RekeyPeerResponse) {}
     rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse) {}
     rpc ListPeers(ListPeersRequest) returns (ListPeersResponse) {}
+    rpc Devices(DevicesRequest) returns (DevicesResponse) {}
 }
 
 message ChangeListenPortRequest {
     int32 listenPort = 1;
+    string deviceName = 2;
 }
 
 message ChangeListenPortResponse {
@@ -20,6 +22,7 @@ message ChangeListenPortResponse {
 
 message CreatePeerRequest {
     repeated string allowedIPs = 1;
+    string deviceName = 2;
 }
 
 message CreatePeerResponse {
@@ -31,6 +34,7 @@ message CreatePeerResponse {
 message RekeyPeerRequest {
     string publicKey = 1;
     repeated string allowedIPs = 2;
+    string deviceName = 3;
 }
 
 message RekeyPeerResponse {
@@ -39,9 +43,9 @@ message RekeyPeerResponse {
     repeated string allowedIPs = 3;
 }
 
-
 message RemovePeerRequest {
     string publicKey = 1;
+    string deviceName = 2;
 }
 
 message RemovePeerResponse {
@@ -60,4 +64,10 @@ message Peer {
     repeated string allowedIPs = 2;
     int64 receivedBytes = 3;
     int64 transmittedBytes = 4;
+}
+
+message DevicesRequest {}
+
+message DevicesResponse {
+    repeated string devices = 1;
 }
