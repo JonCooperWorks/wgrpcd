@@ -15,3 +15,9 @@ They should instead generate a new private key if they ever need a new configura
 + Remove peer and revoke old private key
 + Change wireguard listen port
 + View registered peers
+
+## Using the API
+```wgrpcd``` exposes a gRPC server on localhost.
+By default, it listens on port ```15002```.
+It can be connected to with any language, but this RPC server is intended to be used by [wireguardhttps](https://github.com/joncooperworks/wireguardhttps).
+The protobuf service, requests and responses can be found in [pbdefinitions.proto](https://github.com/JonCooperWorks/wgrpcd/blob/master/pbdefinitions.proto).
