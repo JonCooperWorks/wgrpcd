@@ -53,6 +53,7 @@ message RemovePeerResponse {
 }
 
 message ListPeersRequest {
+    string deviceName = 1;
 }
 
 message ListPeersResponse {
