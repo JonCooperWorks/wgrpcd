@@ -1,14 +1,24 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"log"
-	
-	wireguard "github.com/joncooperworks/wireguardrpc"
+
+	"github.com/joncooperworks/wireguardrpc"
+)
+
+var (
+	wgrpcdAddress = flag.String("wgrpcd-address", "localhost:15002", "-wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program.")
 )
 
 func main() {
 
-	devices, err := wireguard.Devices()
+	client := wireguardrpc.Client{
+		GrpcAddress: *wgrpcdAddress,
+		DeviceName:  "wg0",
+	}
+	devices, err := client.Devices(context.Background())
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -18,8 +28,7 @@ func main() {
 	}
 
 	log.Println("Found devices: ", devices)
-	device := &wireguard.Wireguard{DeviceName: "wg0"}
-	peers, err := device.Peers()
+	peers, err := client.ListPeers(context.Background())
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

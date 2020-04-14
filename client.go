@@ -44,7 +44,7 @@ func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerC
 	return peerConfigINI, nil
 }
 
-func (c *Client) RekeyPeer(oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigINI, error) {
+func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigINI, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (c *Client) RekeyPeer(oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*P
 		AllowedIPs: IPNetsToStrings(allowedIPs),
 		DeviceName: c.DeviceName,
 	}
-	response, err := client.RekeyPeer(context.Background(), request)
+	response, err := client.RekeyPeer(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (c *Client) RekeyPeer(oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*P
 	return peerConfigINI, nil
 }
 
-func (c *Client) ChangeListenPort(listenPort int) (int32, error) {
+func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return 0, err
@@ -82,7 +82,7 @@ func (c *Client) ChangeListenPort(listenPort int) (int32, error) {
 		ListenPort: int32(listenPort),
 		DeviceName: c.DeviceName,
 	}
-	response, err := client.ChangeListenPort(context.Background(), request)
+	response, err := client.ChangeListenPort(ctx, request)
 	if err != nil {
 		return 0, err
 	}
@@ -90,7 +90,7 @@ func (c *Client) ChangeListenPort(listenPort int) (int32, error) {
 	return response.NewListenPort, nil
 }
 
-func (c *Client) RemovePeer(publicKey wgtypes.Key) (bool, error) {
+func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return false, err
@@ -101,7 +101,7 @@ func (c *Client) RemovePeer(publicKey wgtypes.Key) (bool, error) {
 	request := &RemovePeerRequest{
 		PublicKey: publicKey.String(),
 	}
-	response, err := client.RemovePeer(context.Background(), request)
+	response, err := client.RemovePeer(ctx, request)
 	if err != nil {
 		return false, err
 	}
