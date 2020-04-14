@@ -3,7 +3,7 @@
 ## Overview
 Control a Wireguard instance, exposing operations over a gRPC API.
 This process must run as root to manipulate Wireguard configuration and should never be exposed on a publicly accessible interface.
-To prevent accidental binding to publicly accessible interfaces, only the listening port can be configured using thhe ```-listen-port``` flag.
+To prevent accidental binding to publicly accessible interfaces, only the listening port can be configured using the ```-listen-port``` flag.
 This gRPC API is meant to be called by a lower privileged application that can provide services on top of Wireguard that interact with the general internet.
 It intentionally exposes minimal functionality to limit the attack surface.
 Clients have no good reason to retrieve a private key once it has been created.
