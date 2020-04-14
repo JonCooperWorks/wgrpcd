@@ -12,6 +12,10 @@ var (
 	wgrpcdAddress = flag.String("wgrpcd-address", "localhost:15002", "-wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program.")
 )
 
+func init() {
+	flag.Parse()
+}
+
 func main() {
 
 	client := wgrpcd.Client{
