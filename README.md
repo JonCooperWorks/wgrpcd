@@ -23,6 +23,6 @@ It can be connected to with any language, but this RPC server is intended to be 
 The protobuf service, requests and responses can be found in [pbdefinitions.proto](https://github.com/JonCooperWorks/wgrpcd/blob/master/pbdefinitions.proto).
 
 This package exports an API client that handles gRPC connections and handles input validation.
-It can be found in ```github.com/joncooperworks/wireguardrpc/client.go```.
+It can be found at [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
 Clients of wgrpcd should use this instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
