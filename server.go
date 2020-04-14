@@ -2,10 +2,8 @@ package wireguardrpc
 
 import (
 	"context"
-	"net"
 	"os"
 
-	"github.com/joncooperworks/wireguardrpc/pb"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,16 +13,17 @@ const (
 	MaxPort = 65535
 )
 
-type WireguardRPCServer struct {
-	pb.UnimplementedWireguardRPCServer
+// Server implements the operations exposed in the profobuf definitions for the gRPC server.
+type Server struct {
+	UnimplementedWireguardRPCServer
 }
 
-func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreatePeerRequest) (*pb.CreatePeerResponse, error) {
+func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*CreatePeerResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
 
-	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
+	allowedIPs, err := StringsToIPNet(request.GetAllowedIPs())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "an ip address in AllowedIPs is invalid, error: %v", err)
 	}
@@ -42,15 +41,15 @@ func (w *WireguardRPCServer) CreatePeer(ctx context.Context, request *pb.CreateP
 		return nil, status.Errorf(codes.Internal, "error adding peer to wireguard interface: %v", err)
 	}
 
-	response := &pb.CreatePeerResponse{
+	response := &CreatePeerResponse{
 		PublicKey:  peerConfig.PublicKey.String(),
 		PrivateKey: key.String(),
-		AllowedIPs: ipsToString(allowedIPs),
+		AllowedIPs: IPNetsToStrings(allowedIPs),
 	}
 	return response, nil
 }
 
-func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPeerRequest) (*pb.RekeyPeerResponse, error) {
+func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*RekeyPeerResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -59,7 +58,7 @@ func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPee
 		return nil, status.Errorf(codes.Internal, "error generating private key")
 	}
 
-	allowedIPs, err := stringsToIPNet(request.GetAllowedIPs())
+	allowedIPs, err := StringsToIPNet(request.GetAllowedIPs())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "an ip address in AllowedIPs is invalid, error: %v", err)
 	}
@@ -76,15 +75,15 @@ func (w *WireguardRPCServer) RekeyPeer(ctx context.Context, request *pb.RekeyPee
 		return nil, status.Errorf(codes.Internal, "error rekeying peer: %v", err)
 	}
 
-	response := &pb.RekeyPeerResponse{
+	response := &RekeyPeerResponse{
 		PublicKey:  peerConfig.PublicKey.String(),
 		PrivateKey: key.String(),
-		AllowedIPs: ipsToString(allowedIPs),
+		AllowedIPs: IPNetsToStrings(allowedIPs),
 	}
 	return response, nil
 }
 
-func (w *WireguardRPCServer) RemovePeer(ctx context.Context, request *pb.RemovePeerRequest) (*pb.RemovePeerResponse, error) {
+func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*RemovePeerResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -101,13 +100,13 @@ func (w *WireguardRPCServer) RemovePeer(ctx context.Context, request *pb.RemoveP
 		return nil, status.Errorf(codes.Internal, "error removing peer: %v", err)
 	}
 
-	response := &pb.RemovePeerResponse{
+	response := &RemovePeerResponse{
 		Removed: true,
 	}
 	return response, nil
 }
 
-func (w *WireguardRPCServer) ListPeers(ctx context.Context, request *pb.ListPeersRequest) (*pb.ListPeersResponse, error) {
+func (w *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*ListPeersResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -120,11 +119,11 @@ func (w *WireguardRPCServer) ListPeers(ctx context.Context, request *pb.ListPeer
 		return nil, status.Errorf(codes.Internal, "error listing peers: %v", err)
 	}
 
-	peers := []*pb.Peer{}
+	peers := []*Peer{}
 	for _, dp := range devicePeers {
-		peer := &pb.Peer{
+		peer := &Peer{
 			PublicKey:        dp.PublicKey.String(),
-			AllowedIPs:       ipsToString(dp.AllowedIPs),
+			AllowedIPs:       IPNetsToStrings(dp.AllowedIPs),
 			ReceivedBytes:    dp.ReceiveBytes,
 			TransmittedBytes: dp.TransmitBytes,
 			LastSeen:         dp.LastHandshakeTime.Unix(),
@@ -132,13 +131,13 @@ func (w *WireguardRPCServer) ListPeers(ctx context.Context, request *pb.ListPeer
 		peers = append(peers, peer)
 	}
 
-	response := &pb.ListPeersResponse{
+	response := &ListPeersResponse{
 		Peers: peers,
 	}
 	return response, nil
 }
 
-func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.ChangeListenPortRequest) (*pb.ChangeListenPortResponse, error) {
+func (w *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPortRequest) (*ChangeListenPortResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -155,13 +154,13 @@ func (w *WireguardRPCServer) ChangeListenPort(ctx context.Context, request *pb.C
 		return nil, status.Errorf(codes.Internal, "error changing listen port: %v", err)
 	}
 
-	response := &pb.ChangeListenPortResponse{
+	response := &ChangeListenPortResponse{
 		NewListenPort: int32(wireguard.ListenPort),
 	}
 	return response, nil
 }
 
-func (w *WireguardRPCServer) Devices(ctx context.Context, request *pb.DevicesRequest) (*pb.DevicesResponse, error) {
+func (w *Server) Devices(ctx context.Context, request *DevicesRequest) (*DevicesResponse, error) {
 	devices, err := Devices()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error listing devices: %v", err)
@@ -171,29 +170,8 @@ func (w *WireguardRPCServer) Devices(ctx context.Context, request *pb.DevicesReq
 	for _, device := range devices {
 		deviceNames = append(deviceNames, device.DeviceName)
 	}
-	response := &pb.DevicesResponse{
+	response := &DevicesResponse{
 		Devices: deviceNames,
 	}
 	return response, nil
-}
-
-func ipsToString(ipNets []net.IPNet) []string {
-	ips := []string{}
-	for _, ip := range ipNets {
-		ips = append(ips, ip.String())
-	}
-
-	return ips
-}
-
-func stringsToIPNet(cidrStrings []string) ([]net.IPNet, error) {
-	ipNets := []net.IPNet{}
-	for _, cidr := range cidrStrings {
-		_, ipNet, err := net.ParseCIDR(cidr)
-		if err != nil {
-			return nil, err
-		}
-		ipNets = append(ipNets, *ipNet)
-	}
-	return ipNets, nil
 }

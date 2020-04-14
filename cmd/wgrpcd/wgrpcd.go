@@ -5,10 +5,8 @@ import (
 	"flag"
 	"log"
 	"net"
-	"os/user"
 
 	"github.com/joncooperworks/wireguardrpc"
-	"github.com/joncooperworks/wireguardrpc/pb"
 	"google.golang.org/grpc"
 )
 
@@ -21,14 +19,6 @@ func init() {
 }
 
 func main() {
-	currentUser, err := user.Current()
-	if err != nil {
-		log.Fatalf("failed to get current user: %v", err)
-	}
-
-	if currentUser.Uid != "0" {
-		log.Fatalln("wgrpcd must be run as root.")
-	}
 	log.Println("wgrpcd 0.0.1")
 	log.Println("This software has not been audited and runs as root.\nVulnerabilities in this can compromise your root account.\nDo not run this in production")
 
@@ -37,7 +27,7 @@ func main() {
 		log.Fatalf("failed to get listener on %s: %v", *listenPort, err)
 	}
 	rpcServer := grpc.NewServer()
-	pb.RegisterWireguardRPCServer(rpcServer, &wireguardrpc.WireguardRPCServer{})
+	wireguardrpc.RegisterWireguardRPCServer(rpcServer, &wireguardrpc.Server{})
 	log.Println("Attempting to listen on port", *listenPort)
 	if err := rpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
