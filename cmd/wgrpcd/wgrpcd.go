@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/joncooperworks/wireguardrpc"
+	"github.com/joncooperworks/wgrpcd"
 	"google.golang.org/grpc"
 )
 
@@ -27,7 +27,7 @@ func main() {
 		log.Fatalf("failed to get listener on %s: %v", *listenPort, err)
 	}
 	rpcServer := grpc.NewServer()
-	wireguardrpc.RegisterWireguardRPCServer(rpcServer, &wireguardrpc.Server{})
+	wgrpcd.RegisterWireguardRPCServer(rpcServer, &wgrpcd.Server{})
 	log.Println("Attempting to listen on port", *listenPort)
 	if err := rpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)

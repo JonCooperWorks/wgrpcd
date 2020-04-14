@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package wireguardrpc;
+package wgrpcd;
 
 service WireguardRPC {
     rpc ChangeListenPort(ChangeListenPortRequest) returns (ChangeListenPortResponse) {}

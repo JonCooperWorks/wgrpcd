@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/joncooperworks/wireguardrpc"
+	"github.com/joncooperworks/wgrpcd"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 
 func main() {
 
-	client := wireguardrpc.Client{
+	client := wgrpcd.Client{
 		GrpcAddress: *wgrpcdAddress,
 		DeviceName:  "wg0",
 	}

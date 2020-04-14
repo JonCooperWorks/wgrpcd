@@ -1,4 +1,4 @@
-package wireguardrpc
+package wgrpcd
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Client interfaces with the wgrpcd gRPC API.
+// Client interfaces with the wgrpcd gRPC API and marshals data between Go and gRPC.
 type Client struct {
 	GrpcAddress string
 	DeviceName  string

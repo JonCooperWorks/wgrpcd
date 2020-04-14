@@ -1,4 +1,4 @@
-package wireguardrpc
+package wgrpcd
 
 import (
 	"net"

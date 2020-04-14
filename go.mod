@@ -1,4 +1,4 @@
-module github.com/joncooperworks/wireguardrpc
+module github.com/joncooperworks/wgrpcd
 
 go 1.14
 
