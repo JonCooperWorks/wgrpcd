@@ -29,6 +29,7 @@ message CreatePeerResponse {
     string privateKey = 1;
     string publicKey = 2;
     repeated string allowedIPs = 3;
+    string serverPublicKey = 4;
 }
 
 message RekeyPeerRequest {
@@ -41,6 +42,7 @@ message RekeyPeerResponse {
     string privateKey = 1;
     string publicKey = 2;
     repeated string allowedIPs = 3;
+    string serverPublicKey = 4;
 }
 
 message RemovePeerRequest {

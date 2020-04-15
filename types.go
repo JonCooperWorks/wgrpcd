@@ -2,14 +2,11 @@ package wgrpcd
 
 import (
 	"net"
-	"net/url"
 )
 
-type PeerConfigINI struct {
-	PrivateKey string
-	PublicKey  string
-	DNSs       []net.IP
-	AllowedIPs []net.IPNet
-	Endpoint   url.URL
-	Addresses  []net.IPNet
+type PeerConfigInfo struct {
+	PrivateKey      string
+	PublicKey       string
+	AllowedIPs      []net.IPNet
+	ServerPublicKey string
 }

@@ -12,8 +12,28 @@ import (
 // Each call will attempt to control the device and return os.IsNotExist if the named device cannot be found.
 // Wireguard is an abstraction over wgctrl to ensure callers don't leave clients open.
 type Wireguard struct {
-	DeviceName string
-	ListenPort int
+	DeviceName      string
+	ListenPort      int
+	ServerPublicKey wgtypes.Key
+}
+
+func New(deviceName string) (*Wireguard, error) {
+	client, err := wgctrl.New()
+	if err != nil {
+		return nil, err
+	}
+	defer client.Close()
+
+	device, err := client.Device(deviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Wireguard{
+		DeviceName: device.Name,
+		ListenPort: device.ListenPort,
+		ServerPublicKey: device.PublicKey,
+	}, nil
 }
 
 func Devices() ([]*Wireguard, error) {
@@ -31,8 +51,9 @@ func Devices() ([]*Wireguard, error) {
 
 	for _, device := range devices {
 		wireguardDevice := &Wireguard{
-			DeviceName: device.Name,
-			ListenPort: device.ListenPort,
+			DeviceName:      device.Name,
+			ListenPort:      device.ListenPort,
+			ServerPublicKey: device.PublicKey,
 		}
 		wireguardDevices = append(wireguardDevices, wireguardDevice)
 	}
@@ -166,3 +187,4 @@ func (w Wireguard) Peers() ([]wgtypes.Peer, error) {
 	}
 	return device.Peers, nil
 }
+

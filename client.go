@@ -20,7 +20,7 @@ func (c *Client) connection() (*grpc.ClientConn, error) {
 	return grpc.Dial(c.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
 }
 
-func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigINI, error) {
+func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -36,15 +36,16 @@ func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerC
 	if err != nil {
 		return nil, err
 	}
-	peerConfigINI := &PeerConfigINI{
-		PrivateKey: response.PrivateKey,
-		PublicKey:  response.PublicKey,
-		AllowedIPs: allowedIPs,
+	PeerConfigInfo := &PeerConfigInfo{
+		PrivateKey:      response.GetPrivateKey(),
+		PublicKey:       response.GetPublicKey(),
+		AllowedIPs:      allowedIPs,
+		ServerPublicKey: response.GetServerPublicKey(),
 	}
-	return peerConfigINI, nil
+	return PeerConfigInfo, nil
 }
 
-func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigINI, error) {
+func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -62,12 +63,13 @@ func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowe
 		return nil, err
 	}
 
-	peerConfigINI := &PeerConfigINI{
-		PrivateKey: response.PrivateKey,
-		PublicKey:  response.PublicKey,
-		AllowedIPs: allowedIPs,
+	PeerConfigInfo := &PeerConfigInfo{
+		PrivateKey:      response.GetPrivateKey(),
+		PublicKey:       response.GetPublicKey(),
+		ServerPublicKey: response.GetServerPublicKey(),
+		AllowedIPs:      allowedIPs,
 	}
-	return peerConfigINI, nil
+	return PeerConfigInfo, nil
 }
 
 func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {

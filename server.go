@@ -19,8 +19,12 @@ type Server struct {
 }
 
 func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*CreatePeerResponse, error) {
-	wireguard := &Wireguard{
-		DeviceName: request.GetDeviceName(),
+	wireguard, err := New(request.GetDeviceName())
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
+		}
+		return nil, status.Errorf(codes.Internal, "error creating peer: %v", err)
 	}
 
 	allowedIPs, err := StringsToIPNet(request.GetAllowedIPs())
@@ -42,17 +46,23 @@ func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*C
 	}
 
 	response := &CreatePeerResponse{
-		PublicKey:  peerConfig.PublicKey.String(),
-		PrivateKey: key.String(),
-		AllowedIPs: IPNetsToStrings(allowedIPs),
+		PublicKey:       peerConfig.PublicKey.String(),
+		PrivateKey:      key.String(),
+		AllowedIPs:      IPNetsToStrings(allowedIPs),
+		ServerPublicKey: wireguard.ServerPublicKey.String(),
 	}
 	return response, nil
 }
 
 func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*RekeyPeerResponse, error) {
-	wireguard := &Wireguard{
-		DeviceName: request.GetDeviceName(),
+	wireguard, err := New(request.GetDeviceName())
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
+		}
+		return nil, status.Errorf(codes.Internal, "error rekeying peer: %v", err)
 	}
+
 	key, err := wgtypes.GeneratePrivateKey()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error generating private key")
@@ -76,9 +86,10 @@ func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*Rek
 	}
 
 	response := &RekeyPeerResponse{
-		PublicKey:  peerConfig.PublicKey.String(),
-		PrivateKey: key.String(),
-		AllowedIPs: IPNetsToStrings(allowedIPs),
+		PublicKey:       peerConfig.PublicKey.String(),
+		PrivateKey:      key.String(),
+		AllowedIPs:      IPNetsToStrings(allowedIPs),
+		ServerPublicKey: wireguard.ServerPublicKey.String(),
 	}
 	return response, nil
 }
