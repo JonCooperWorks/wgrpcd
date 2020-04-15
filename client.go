@@ -89,7 +89,7 @@ func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, e
 		return 0, err
 	}
 
-	return response.NewListenPort, nil
+	return response.GetNewListenPort(), nil
 }
 
 func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
@@ -108,7 +108,7 @@ func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, e
 		return false, err
 	}
 
-	return response.Removed, nil
+	return response.GetRemoved(), nil
 }
 
 func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
@@ -127,7 +127,7 @@ func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
 		return []*Peer{}, err
 	}
 
-	return response.Peers, nil
+	return response.GetPeers(), nil
 }
 
 func (c *Client) Devices(ctx context.Context) ([]string, error) {
@@ -144,5 +144,5 @@ func (c *Client) Devices(ctx context.Context) ([]string, error) {
 		return []string{}, err
 	}
 
-	return response.Devices, nil
+	return response.GetDevices(), nil
 }
