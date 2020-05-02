@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net"
 
 	"github.com/joncooperworks/wgrpcd"
 )
@@ -31,11 +32,28 @@ func main() {
 		log.Fatalln("no wireguard device detected")
 	}
 
-	log.Println("Found devices: ", devices)
+	log.Println("Found", len(devices), "devices:", devices)
 	peers, err := client.ListPeers(context.Background())
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
+	log.Println("Found", len(peers), "peers")
 	log.Println(peers)
+
+	_, network, _ := net.ParseCIDR("10.0.0.3/32")
+	credentials, err := client.CreatePeer(context.Background(), []net.IPNet{*network})
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	log.Println(credentials)
+
+	peers, err = client.ListPeers(context.Background())
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	log.Println("Found", len(peers), "peers")
+	log.Println(peers)
+
 }
