@@ -101,7 +101,8 @@ func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, e
 
 	client := NewWireguardRPCClient(conn)
 	request := &RemovePeerRequest{
-		PublicKey: publicKey.String(),
+		PublicKey:  publicKey.String(),
+		DeviceName: c.DeviceName,
 	}
 	response, err := client.RemovePeer(ctx, request)
 	if err != nil {
