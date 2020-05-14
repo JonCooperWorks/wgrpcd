@@ -11,7 +11,7 @@ import (
 // Client interfaces with the wgrpcd API and marshals data between Go and the underlying transport.
 type Client interface {
 	CreatePeer(context.Context, []net.IPNet) (*PeerConfigInfo, error)
-	RekeyPeer(context.Context, []net.IPNet) (*PeerConfigInfo, error)
+	RekeyPeer(context.Context, wgtypes.Key, []net.IPNet) (*PeerConfigInfo, error)
 	ChangeListenPort(int) (int32, error)
 	RemovePeer(context.Context, wgtypes.Key) (bool, error)
 	ListPeers(context.Context) ([]*Peer, error)
