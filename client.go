@@ -8,19 +8,29 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Client interfaces with the wgrpcd gRPC API and marshals data between Go and gRPC.
-type Client struct {
+// Client interfaces with the wgrpcd API and marshals data between Go and the underlying transport.
+type Client interface {
+	CreatePeer(context.Context, []net.IPNet) (*PeerConfigInfo, error)
+	RekeyPeer(context.Context, []net.IPNet) (*PeerConfigInfo, error)
+	ChangeListenPort(int) (int32, error)
+	RemovePeer(context.Context, wgtypes.Key) (bool, error)
+	ListPeers(context.Context) ([]*Peer, error)
+	Devices(context.Context) ([]string, error)
+}
+
+// GRPCClient implements a gRPC Client for wgrpcd.
+type GRPCClient struct {
 	GrpcAddress string
 	DeviceName  string
 }
 
 // connection returns a GRPC connection to ensure all gRPC connections are done in a consistent way.
 // Callers of this must Close() the connection themselves.
-func (c *Client) connection() (*grpc.ClientConn, error) {
+func (c *GRPCClient) connection() (*grpc.ClientConn, error) {
 	return grpc.Dial(c.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
 }
 
-func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
+func (c *GRPCClient) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -45,7 +55,7 @@ func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerC
 	return PeerConfigInfo, nil
 }
 
-func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
+func (c *GRPCClient) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -72,7 +82,7 @@ func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowe
 	return PeerConfigInfo, nil
 }
 
-func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {
+func (c *GRPCClient) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return 0, err
@@ -92,7 +102,7 @@ func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, e
 	return response.GetNewListenPort(), nil
 }
 
-func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
+func (c *GRPCClient) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return false, err
@@ -112,7 +122,7 @@ func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, e
 	return response.GetRemoved(), nil
 }
 
-func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
+func (c *GRPCClient) ListPeers(ctx context.Context) ([]*Peer, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -131,7 +141,7 @@ func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
 	return response.GetPeers(), nil
 }
 
-func (c *Client) Devices(ctx context.Context) ([]string, error) {
+func (c *GRPCClient) Devices(ctx context.Context) ([]string, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return []string{}, err
