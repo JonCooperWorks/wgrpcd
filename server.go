@@ -22,7 +22,7 @@ func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*C
 	wireguard, err := New(request.GetDeviceName())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
+			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist: %s", request.GetDeviceName())
 		}
 		return nil, status.Errorf(codes.Internal, "error creating peer: %v", err)
 	}
