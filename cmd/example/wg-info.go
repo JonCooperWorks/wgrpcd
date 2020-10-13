@@ -19,7 +19,7 @@ func init() {
 
 func main() {
 
-	client := wgrpcd.Client{
+	client := &wgrpcd.GRPCClient{
 		GrpcAddress: *wgrpcdAddress,
 		DeviceName:  "wg0",
 	}
