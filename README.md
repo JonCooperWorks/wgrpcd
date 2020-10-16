@@ -5,7 +5,7 @@
 
 ## Overview
 `wgrpcd` controls a Wireguard instance, exposing operations over a gRPC API.
-This process must run as root to manipulate Wireguard configuration and as such should be bound to localhost, but can be publicly exposed to let an application control `wgrpcd` from a different server.
+This process must run with permissions to manipulate Wireguard interfaces and as such is bound to localhost by default, but can be publicly exposed to let an application control `wgrpcd` from a different server.
 No matter where it's bound, it must be configured to use [mTLS](https://developers.cloudflare.com/access/service-auth/mtls) with TLSv1.3.
 Keep all key material in a safe place, like [Azure Key Vault](https://godoc.org/github.com/Azure/azure-sdk-for-go/services/keyvault/v7.0/keyvault).
 This gRPC API is meant to be called by a lower privileged application that can provide services on top of Wireguard that interact with the general internet.
