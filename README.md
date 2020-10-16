@@ -13,7 +13,7 @@ They should instead generate a new private key if they ever need a new configura
 ```
 Usage of wgrpcd:
   -ca-cert string
-        -ca-cert is the CA that client certificates will be signed by. (default "cacert.pem")
+        -ca-cert is the CA that client certificates will be signed with. (default "cacert.pem")
   -listen-address string
         -listen-address specifies the host:port pair to listen on. (default "localhost:15002")
   -server-cert string
