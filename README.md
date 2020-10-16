@@ -1,5 +1,8 @@
 # Wireguard Controller
 
+[![GoDoc reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/joncooperworks/wgrpcd)
+
+
 ## Overview
 `wgrpcd` controls a Wireguard instance, exposing operations over a gRPC API.
 This process must run as root to manipulate Wireguard configuration and as such should be bound to localhost, but can be publicly exposed to let an application control `wgrpcd` from a different server.
