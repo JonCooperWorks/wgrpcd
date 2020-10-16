@@ -2,10 +2,16 @@ package wgrpcd
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -192,4 +198,41 @@ func (w *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 		Devices: deviceNames,
 	}
 	return response, nil
+}
+
+// NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
+// wgrpcd refuses all unencrypted connections.
+func NewServer(config *ServerConfig) (*grpc.Server, error) {
+	serverCert, err := tls.LoadX509KeyPair(config.ServerCertFilename, config.ServerKeyFilename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load server certificate and key: %w", err)
+	}
+
+	// Load the CA certificate
+	trustedCert, err := ioutil.ReadFile(config.CACertFilename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load trusted certificate: %w", err)
+	}
+
+	// Put the CA certificate to certificate pool
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(trustedCert) {
+		return nil, fmt.Errorf("failed to append trusted certificate to certificate pool: %w", err)
+	}
+
+	// Create the TLS configuration
+	// Since this is gRPC, we can enforce TLSv1.3.
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		RootCAs:      certPool,
+		ClientCAs:    certPool,
+		MinVersion:   tls.VersionTLS13,
+		MaxVersion:   tls.VersionTLS13,
+	}
+
+	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
+	cred := credentials.NewTLS(tlsConfig)
+	rpcServer := grpc.NewServer(grpc.Creds(cred))
+	RegisterWireguardRPCServer(rpcServer, &Server{})
+	return rpcServer, nil
 }

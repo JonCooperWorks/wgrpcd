@@ -10,7 +10,11 @@ import (
 )
 
 var (
-	wgrpcdAddress = flag.String("wgrpcd-address", "localhost:15002", "-wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program.")
+	wgrpcdAddress      = flag.String("wgrpcd-address", "localhost:15002", "-wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program.")
+	clientKeyFilename  = flag.String("client-key", "clientkey.pem", "-client-key is the client SSL key.")
+	clientCertFilename = flag.String("client-cert", "clientcert.pem", "-client-cert is the client SSL certificate.")
+	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that server certificates will be signed by.")
+	wgDeviceName       = flag.String("wireguard-interface", "wg0", "-device name is the name of the wireguard interface.")
 )
 
 func init() {
@@ -18,11 +22,19 @@ func init() {
 }
 
 func main() {
-
-	client := &wgrpcd.GRPCClient{
-		GrpcAddress: *wgrpcdAddress,
-		DeviceName:  "wg0",
+	config := &wgrpcd.ClientConfig{
+		ClientKeyFilename:  *clientKeyFilename,
+		ClientCertFilename: *clientCertFilename,
+		CACertFilename:     *caCertFilename,
+		GrpcAddress:        *wgrpcdAddress,
+		DeviceName:         *wgDeviceName,
 	}
+
+	client, err := wgrpcd.NewClient(config)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
 	devices, err := client.Devices(context.Background())
 	if err != nil {
 		log.Fatalln(err.Error())

@@ -2,36 +2,69 @@ package wgrpcd
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
 	"net"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // Client interfaces with the wgrpcd API and marshals data between Go and the underlying transport.
-type Client interface {
-	CreatePeer(context.Context, []net.IPNet) (*PeerConfigInfo, error)
-	RekeyPeer(context.Context, wgtypes.Key, []net.IPNet) (*PeerConfigInfo, error)
-	ChangeListenPort(context.Context, int) (int32, error)
-	RemovePeer(context.Context, wgtypes.Key) (bool, error)
-	ListPeers(context.Context) ([]*Peer, error)
-	Devices(context.Context) ([]string, error)
+// It allows controlling a single device at a time.
+type Client struct {
+	GrpcAddress    string
+	DeviceName     string
+	TLSCredentials credentials.TransportCredentials
 }
 
-// GRPCClient connects to a wgrpcd instance.
-type GRPCClient struct {
-	GrpcAddress string
-	DeviceName  string
+// NewClient returns a client configured with
+func NewClient(config *ClientConfig) (*Client, error) {
+	clientCert, err := tls.LoadX509KeyPair(config.ClientCertFilename, config.ClientKeyFilename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load client certificate and key. %w", err)
+	}
+
+	// Load the CA certificate
+	trustedCert, err := ioutil.ReadFile(config.CACertFilename)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load trusted certificate. %w", err)
+	}
+
+	// Put the CA certificate to certificate pool
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(trustedCert) {
+		return nil, fmt.Errorf("failed to append trusted certificate to certificate pool. %w", err)
+	}
+
+	// Create the TLS configuration
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      certPool,
+		MinVersion:   tls.VersionTLS13,
+		MaxVersion:   tls.VersionTLS13,
+	}
+
+	// Create a new TLS credentials based on the TLS configuration
+	cred := credentials.NewTLS(tlsConfig)
+	return &Client{
+		GrpcAddress:    config.GrpcAddress,
+		DeviceName:     config.DeviceName,
+		TLSCredentials: cred,
+	}, nil
 }
 
 // connection returns a GRPC connection to ensure all gRPC connections are done in a consistent way.
 // Callers of this must Close() the connection themselves.
-func (c *GRPCClient) connection() (*grpc.ClientConn, error) {
-	return grpc.Dial(c.GrpcAddress, grpc.WithInsecure(), grpc.WithBlock())
+func (c *Client) connection() (*grpc.ClientConn, error) {
+	return grpc.Dial(c.GrpcAddress, grpc.WithTransportCredentials(c.TLSCredentials))
 }
 
 // CreatePeer calls the server's CreatePeer method and returns a Wireguard config for the newly created peer.
-func (c *GRPCClient) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
+func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -57,7 +90,7 @@ func (c *GRPCClient) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*P
 }
 
 // RekeyPeer wraps the server's RekeyPeer operation and returns the updated credentials.
-func (c *GRPCClient) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
+func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -85,7 +118,7 @@ func (c *GRPCClient) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, al
 }
 
 // ChangeListenPort changes a wgrpcd's Wireguard server's listen port
-func (c *GRPCClient) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {
+func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return 0, err
@@ -106,7 +139,7 @@ func (c *GRPCClient) ChangeListenPort(ctx context.Context, listenPort int) (int3
 }
 
 // RemovePeer removes a peer from the Wireguard server and revokes its access.
-func (c *GRPCClient) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
+func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return false, err
@@ -127,7 +160,7 @@ func (c *GRPCClient) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (boo
 }
 
 // ListPeers shows all peers authorized to connect to a Wireguard instance.
-func (c *GRPCClient) ListPeers(ctx context.Context) ([]*Peer, error) {
+func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -147,7 +180,7 @@ func (c *GRPCClient) ListPeers(ctx context.Context) ([]*Peer, error) {
 }
 
 // Devices returns all Wireguard interfaces controllable by wgrpcd.
-func (c *GRPCClient) Devices(ctx context.Context) ([]string, error) {
+func (c *Client) Devices(ctx context.Context) ([]string, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return []string{}, err
