@@ -56,7 +56,7 @@ type ClientConfig struct {
 }
 ```
 
-Go clients of wgrpcd should use this instead of writing their own client implementations.
+Go clients of `wgrpcd` should use this instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
 
 There's an example client in [wg-info.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/example/wg-info.go) that displays all connected Wireguard interfaces.
