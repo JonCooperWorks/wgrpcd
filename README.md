@@ -39,6 +39,38 @@ It can be connected to with any language, but this RPC server is intended to be 
 The protobuf service, requests and responses can be found in [pbdefinitions.proto](https://github.com/JonCooperWorks/wgrpcd/blob/master/pbdefinitions.proto).
 
 This package exports an API client that handles gRPC connections and handles input validation.
-It can be found at [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
-Clients of wgrpcd should use this instead of writing their own client implementations.
+
+
+```
+There's a `wgrpcd.Client` that handles loading SSL credential input and performs some input validation before sending it over the wire in [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
+
+To create a client, pass a `wgrpcd.ClientConfig` struct to `wgrpcd.NewConfig`.
+
+```
+// ClientConfig contains all information needed to configure a wgrpcd.Client.
+type ClientConfig struct {
+	GrpcAddress        string
+	DeviceName         string
+	ClientCertFilename string
+	ClientKeyFilename  string
+	CACertFilename     string
+}
+```
+
+Go clients of wgrpcd should use this instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
+
+There's an example client in [wg-info.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/example/wg-info.go) that displays all connected Wireguard interfaces.
+The client needs to be configured for mTLS with a client certificate, key and CA certificate for validating the server.
+```
+Usage of wg-info:
+  -ca-cert string
+        -ca-cert is the CA that server certificates will be signed with. (default "cacert.pem")
+  -client-cert string
+        -client-cert is the client SSL certificate. (default "clientcert.pem")
+  -client-key string
+        -client-key is the client SSL key. (default "clientkey.pem")
+  -wgrpcd-address string
+        -wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program. (default "localhost:15002")
+  -wireguard-interface string
+        -device name is the name of the wireguard interface. (default "wg0")
