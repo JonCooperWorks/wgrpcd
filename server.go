@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MaxPort = 65535
+	maxPort = 65535
 )
 
 // Server implements the operations exposed in the profobuf definitions for the gRPC server.
@@ -18,6 +18,7 @@ type Server struct {
 	UnimplementedWireguardRPCServer
 }
 
+// CreatePeer adds a new Wireguard peer to the VPN.
 func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*CreatePeerResponse, error) {
 	wireguard, err := New(request.GetDeviceName())
 	if err != nil {
@@ -54,6 +55,7 @@ func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*C
 	return response, nil
 }
 
+// RekeyPeer revokes a client's old public key and replaces it with a new one.
 func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*RekeyPeerResponse, error) {
 	wireguard, err := New(request.GetDeviceName())
 	if err != nil {
@@ -94,6 +96,7 @@ func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*Rek
 	return response, nil
 }
 
+// RemovePeer deletes a peer from the Wireguard interface.
 func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*RemovePeerResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
@@ -117,6 +120,7 @@ func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*R
 	return response, nil
 }
 
+// ListPeers returns all peers from a Wireguard device.
 func (w *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*ListPeersResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
@@ -148,14 +152,16 @@ func (w *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*Lis
 	return response, nil
 }
 
+// ChangeListenPort updates the listening port wireguard is running on.
+// It can be used to allow coordination with a firewall.
 func (w *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPortRequest) (*ChangeListenPortResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
 
 	port := int(request.GetListenPort())
-	if port < 0 || port > MaxPort {
-		return nil, status.Errorf(codes.InvalidArgument, "port must be between 0 and %d", MaxPort)
+	if port < 0 || port > maxPort {
+		return nil, status.Errorf(codes.InvalidArgument, "port must be between 0 and %d", maxPort)
 	}
 	err := wireguard.ChangeListenPort(port)
 	if err != nil {
@@ -171,6 +177,7 @@ func (w *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPort
 	return response, nil
 }
 
+// Devices shows all Wireguard interfaces that can be controlled with wgrpcd.
 func (w *Server) Devices(ctx context.Context, request *DevicesRequest) (*DevicesResponse, error) {
 	devices, err := Devices()
 	if err != nil {

@@ -17,6 +17,7 @@ type Wireguard struct {
 	ServerPublicKey wgtypes.Key
 }
 
+// New returns a new Wireguard controller.
 func New(deviceName string) (*Wireguard, error) {
 	client, err := wgctrl.New()
 	if err != nil {
@@ -30,12 +31,13 @@ func New(deviceName string) (*Wireguard, error) {
 	}
 
 	return &Wireguard{
-		DeviceName: device.Name,
-		ListenPort: device.ListenPort,
+		DeviceName:      device.Name,
+		ListenPort:      device.ListenPort,
 		ServerPublicKey: device.PublicKey,
 	}, nil
 }
 
+// Devices shows all Wireguard interfaces.
 func Devices() ([]*Wireguard, error) {
 	wireguardDevices := []*Wireguard{}
 	client, err := wgctrl.New()
@@ -88,6 +90,7 @@ func (w Wireguard) ChangeListenPort(port int) error {
 	return client.ConfigureDevice(device.Name, config)
 }
 
+// AddNewPeer adds a new Wireguard peer to the VPN.
 func (w Wireguard) AddNewPeer(allowedIPs []net.IPNet, publicKey wgtypes.Key) (*wgtypes.PeerConfig, error) {
 	client, err := wgctrl.New()
 	if err != nil {
@@ -117,6 +120,7 @@ func (w Wireguard) AddNewPeer(allowedIPs []net.IPNet, publicKey wgtypes.Key) (*w
 	return &peerConfig, nil
 }
 
+// RekeyClient revokes a client's old public key and replaces it with a new one.
 func (w Wireguard) RekeyClient(allowedIPs []net.IPNet, oldPublicKey, newPublicKey wgtypes.Key) (*wgtypes.PeerConfig, error) {
 	client, err := wgctrl.New()
 	if err != nil {
@@ -150,6 +154,7 @@ func (w Wireguard) RekeyClient(allowedIPs []net.IPNet, oldPublicKey, newPublicKe
 	return &newPeerConfig, nil
 }
 
+// RemovePeer deletes a peer from the Wireguard interface.
 func (w Wireguard) RemovePeer(publicKey wgtypes.Key) error {
 	client, err := wgctrl.New()
 	if err != nil {
@@ -174,6 +179,7 @@ func (w Wireguard) RemovePeer(publicKey wgtypes.Key) error {
 	return client.ConfigureDevice(device.Name, config)
 }
 
+// Peers returns all peers from a Wireguard device.
 func (w Wireguard) Peers() ([]wgtypes.Peer, error) {
 	client, err := wgctrl.New()
 	if err != nil {
@@ -187,4 +193,3 @@ func (w Wireguard) Peers() ([]wgtypes.Peer, error) {
 	}
 	return device.Peers, nil
 }
-

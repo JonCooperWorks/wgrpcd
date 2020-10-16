@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+// IPNetsToStrings converts a list of net.IPNets to CIDR subnet strings.
 func IPNetsToStrings(nets []net.IPNet) []string {
 	ips := []string{}
 	for _, net := range nets {
@@ -13,6 +14,7 @@ func IPNetsToStrings(nets []net.IPNet) []string {
 	return ips
 }
 
+// StringsToIPNet tries to convert a list of CIDR subnet strings to net.IPNets.
 func StringsToIPNet(cidrStrings []string) ([]net.IPNet, error) {
 	ipNets := []net.IPNet{}
 	for _, cidr := range cidrStrings {
@@ -25,6 +27,7 @@ func StringsToIPNet(cidrStrings []string) ([]net.IPNet, error) {
 	return ipNets, nil
 }
 
+// IPsToStrings converts a list of net.IPs to string
 func IPsToStrings(ips []net.IP) []string {
 	rv := []string{}
 	for _, n := range ips {
@@ -34,6 +37,7 @@ func IPsToStrings(ips []net.IP) []string {
 	return rv
 }
 
+// StringsToIPs parses a list of strings into net.IPs.
 func StringsToIPs(rawIPs []string) ([]net.IP, error) {
 	ips := []net.IP{}
 	for _, rawIP := range rawIPs {
