@@ -41,7 +41,6 @@ The protobuf service, requests and responses can be found in [pbdefinitions.prot
 This package exports an API client that handles gRPC connections and handles input validation.
 
 
-```
 There's a `wgrpcd.Client` that handles loading SSL credential input and performs some input validation before sending it over the wire in [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
 
 To create a client, pass a `wgrpcd.ClientConfig` struct to `wgrpcd.NewConfig`.
