@@ -13,7 +13,7 @@ var (
 	wgrpcdAddress      = flag.String("wgrpcd-address", "localhost:15002", "-wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program.")
 	clientKeyFilename  = flag.String("client-key", "clientkey.pem", "-client-key is the client SSL key.")
 	clientCertFilename = flag.String("client-cert", "clientcert.pem", "-client-cert is the client SSL certificate.")
-	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that server certificates will be signed by.")
+	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that server certificates will be signed with.")
 	wgDeviceName       = flag.String("wireguard-interface", "wg0", "-device name is the name of the wireguard interface.")
 )
 

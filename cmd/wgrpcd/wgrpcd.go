@@ -13,7 +13,7 @@ var (
 	listenAddress      = flag.String("listen-address", "localhost:15002", "-listen-address specifies the host:port pair to listen on.")
 	serverKeyFilename  = flag.String("server-key", "serverkey.pem", "-server-key is the wgrpcd SSL key.")
 	serverCertFilename = flag.String("server-cert", "servercert.pem", "-server-cert is the wgrpcd SSL certificate.")
-	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that client certificates will be signed by.")
+	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that client certificates will be signed with.")
 )
 
 func init() {
