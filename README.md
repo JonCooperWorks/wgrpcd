@@ -69,7 +69,7 @@ It's possible to use `wgrpcd` clients with encrypted client keys by encrypting t
 At runtime, decrypt the client key before passing its bytes to the `wgrpcd.ClientConfig`.
 This makes it possible to do `git push heroku master` with `wgprcd` clients without putting your client credentials in version control.
 
-Go clients of `wgrpcd` should use this instead of writing their own client implementations.
+Go clients of `wgrpcd` should use `wgrpcd.Client` instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
 
 There's an example client in [wg-info.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/example/wg-info.go) that displays all connected Wireguard interfaces.
