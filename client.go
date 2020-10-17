@@ -52,7 +52,6 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	cred := credentials.NewTLS(tlsConfig)
 	return &Client{
 		GrpcAddress:    config.GrpcAddress,
-		DeviceName:     config.DeviceName,
 		TLSCredentials: cred,
 	}, nil
 }
@@ -64,7 +63,7 @@ func (c *Client) connection() (*grpc.ClientConn, error) {
 }
 
 // CreatePeer calls the server's CreatePeer method and returns a Wireguard config for the newly created peer.
-func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
+func (c *Client) CreatePeer(ctx context.Context, deviceName string, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -74,7 +73,7 @@ func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerC
 	client := NewWireguardRPCClient(conn)
 	request := &CreatePeerRequest{
 		AllowedIPs: IPNetsToStrings(allowedIPs),
-		DeviceName: c.DeviceName,
+		DeviceName: deviceName,
 	}
 	response, err := client.CreatePeer(ctx, request)
 	if err != nil {
@@ -90,7 +89,7 @@ func (c *Client) CreatePeer(ctx context.Context, allowedIPs []net.IPNet) (*PeerC
 }
 
 // RekeyPeer wraps the server's RekeyPeer operation and returns the updated credentials.
-func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
+func (c *Client) RekeyPeer(ctx context.Context, deviceName string, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -101,7 +100,7 @@ func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowe
 	request := &RekeyPeerRequest{
 		PublicKey:  oldPublicKey.String(),
 		AllowedIPs: IPNetsToStrings(allowedIPs),
-		DeviceName: c.DeviceName,
+		DeviceName: deviceName,
 	}
 	response, err := client.RekeyPeer(ctx, request)
 	if err != nil {
@@ -118,7 +117,7 @@ func (c *Client) RekeyPeer(ctx context.Context, oldPublicKey wgtypes.Key, allowe
 }
 
 // ChangeListenPort changes a wgrpcd's Wireguard server's listen port
-func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, error) {
+func (c *Client) ChangeListenPort(ctx context.Context, deviceName string, listenPort int) (int32, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return 0, err
@@ -128,7 +127,7 @@ func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, e
 	client := NewWireguardRPCClient(conn)
 	request := &ChangeListenPortRequest{
 		ListenPort: int32(listenPort),
-		DeviceName: c.DeviceName,
+		DeviceName: deviceName,
 	}
 	response, err := client.ChangeListenPort(ctx, request)
 	if err != nil {
@@ -139,7 +138,7 @@ func (c *Client) ChangeListenPort(ctx context.Context, listenPort int) (int32, e
 }
 
 // RemovePeer removes a peer from the Wireguard server and revokes its access.
-func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, error) {
+func (c *Client) RemovePeer(ctx context.Context, deviceName string, publicKey wgtypes.Key) (bool, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return false, err
@@ -149,7 +148,7 @@ func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, e
 	client := NewWireguardRPCClient(conn)
 	request := &RemovePeerRequest{
 		PublicKey:  publicKey.String(),
-		DeviceName: c.DeviceName,
+		DeviceName: deviceName,
 	}
 	response, err := client.RemovePeer(ctx, request)
 	if err != nil {
@@ -160,7 +159,7 @@ func (c *Client) RemovePeer(ctx context.Context, publicKey wgtypes.Key) (bool, e
 }
 
 // ListPeers shows all peers authorized to connect to a Wireguard instance.
-func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
+func (c *Client) ListPeers(ctx context.Context, deviceName string) ([]*Peer, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, err
@@ -169,7 +168,7 @@ func (c *Client) ListPeers(ctx context.Context) ([]*Peer, error) {
 
 	client := NewWireguardRPCClient(conn)
 	request := &ListPeersRequest{
-		DeviceName: c.DeviceName,
+		DeviceName: deviceName,
 	}
 	response, err := client.ListPeers(ctx, request)
 	if err != nil {

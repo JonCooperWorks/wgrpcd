@@ -38,7 +38,6 @@ func main() {
 		ClientCertBytes: clientCertBytes,
 		CACertFilename:  *caCertFilename,
 		GrpcAddress:     *wgrpcdAddress,
-		DeviceName:      *wgDeviceName,
 	}
 
 	client, err := wgrpcd.NewClient(config)
@@ -56,7 +55,7 @@ func main() {
 	}
 
 	log.Println("Found", len(devices), "devices:", devices)
-	peers, err := client.ListPeers(context.Background())
+	peers, err := client.ListPeers(context.Background(), *wgDeviceName)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -65,13 +64,13 @@ func main() {
 	log.Println(peers)
 
 	_, network, _ := net.ParseCIDR("10.0.0.3/32")
-	credentials, err := client.CreatePeer(context.Background(), []net.IPNet{*network})
+	credentials, err := client.CreatePeer(context.Background(), *wgDeviceName, []net.IPNet{*network})
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	log.Println(credentials)
 
-	peers, err = client.ListPeers(context.Background())
+	peers, err = client.ListPeers(context.Background(), *wgDeviceName)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
