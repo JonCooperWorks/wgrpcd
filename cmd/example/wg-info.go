@@ -14,7 +14,7 @@ var (
 	clientKeyFilename  = flag.String("client-key", "clientkey.pem", "-client-key is the client SSL key.")
 	clientCertFilename = flag.String("client-cert", "clientcert.pem", "-client-cert is the client SSL certificate.")
 	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that server certificates will be signed with.")
-	wgDeviceName       = flag.String("wireguard-interface", "wg0", "-device name is the name of the wireguard interface.")
+	wgDeviceName       = flag.String("wireguard-interface", "wg0", "-wireguard-interface is the name of the wireguard interface.")
 )
 
 func init() {

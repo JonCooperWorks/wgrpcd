@@ -9,5 +9,5 @@ Usage of wg-info:
   -wgrpcd-address string
         -wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program. (default "localhost:15002")
   -wireguard-interface string
-        -device name is the name of the wireguard interface. (default "wg0")
+        -wireguard-interface is the name of the wireguard interface. (default "wg0")
 ```
