@@ -55,7 +55,7 @@ type ClientConfig struct {
 }
 ```
 
-It's possible to use `wgrpcd` clients with encrypted client keys by encrypting it before committing it to source control.
+It's possible to use `wgrpcd` clients with encrypted client keys by encrypting the key before committing it to source control.
 At runtime, decrypt the client key before passing its bytes to the `wgrpcd.ClientConfig`.
 This makes it possible to do `git push heroku master` with `wgprcd` clients without putting your client credentials in version control.
 
