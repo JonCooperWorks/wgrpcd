@@ -51,9 +51,9 @@ The protobuf service, requests and responses can be found in [pbdefinitions.prot
 This package exports an API client that handles gRPC connections and handles input validation.
 
 
-There's a `wgrpcd.Client` that handles loading SSL credentials and performs some input validation before sending it over the wire in [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
+There's a [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) that handles loading SSL credentials and performs some input validation before sending it over the wire in [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
 
-To create a client, pass a `wgrpcd.ClientConfig` struct to `wgrpcd.NewConfig`.
+To create a client, pass a [wgrpcd.ClientConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ClientConfig) struct to [wgrpcd.NewClient](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewClient).
 
 ```
 // ClientConfig contains all information needed to configure a wgrpcd.Client.
@@ -69,7 +69,7 @@ It's possible to use `wgrpcd` clients with encrypted client keys by encrypting t
 At runtime, decrypt the client key before passing its bytes to the `wgrpcd.ClientConfig`.
 This makes it possible to do `git push heroku master` with `wgprcd` clients without putting your client credentials in version control.
 
-Go clients of `wgrpcd` should use `wgrpcd.Client` instead of writing their own client implementations.
+Go clients of `wgrpcd` should use [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
 
 There's an example client in [wg-info.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/example/wg-info.go) that displays all connected Wireguard interfaces.
