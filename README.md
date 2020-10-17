@@ -48,7 +48,7 @@ To create a client, pass a `wgrpcd.ClientConfig` struct to `wgrpcd.NewConfig`.
 ```
 // ClientConfig contains all information needed to configure a wgrpcd.Client.
 type ClientConfig struct {
-	GrpcAddress     string
+	GRPCAddress     string
 	ClientCertBytes []byte
 	ClientKeyBytes  []byte
 	CACertFilename  string
