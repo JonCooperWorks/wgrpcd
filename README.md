@@ -28,7 +28,7 @@ Usage of wgrpcd:
 `wgrpcd` doesn't maintain any state to limit attack surface.
 This means `wgrpcd` does not:
 + Allocate IP Addresses
-+ Set DNS providers
++ Set DNS providers for clients
 + Limit access between connected devices
 + Monitor VPN traffic
 
