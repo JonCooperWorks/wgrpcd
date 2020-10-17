@@ -51,7 +51,7 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	// Create a new TLS credentials based on the TLS configuration
 	cred := credentials.NewTLS(tlsConfig)
 	return &Client{
-		GrpcAddress:    config.GrpcAddress,
+		GrpcAddress:    config.GRPCAddress,
 		TLSCredentials: cred,
 	}, nil
 }

@@ -37,7 +37,7 @@ func main() {
 		ClientKeyBytes:  clientKeyBytes,
 		ClientCertBytes: clientCertBytes,
 		CACertFilename:  *caCertFilename,
-		GrpcAddress:     *wgrpcdAddress,
+		GRPCAddress:     *wgrpcdAddress,
 	}
 
 	client, err := wgrpcd.NewClient(config)

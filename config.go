@@ -9,7 +9,7 @@ type ServerConfig struct {
 
 // ClientConfig contains all information needed to configure a wgrpcd.Client.
 type ClientConfig struct {
-	GrpcAddress     string
+	GRPCAddress     string
 	ClientCertBytes []byte
 	ClientKeyBytes  []byte
 	CACertFilename  string
