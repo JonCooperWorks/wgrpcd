@@ -203,7 +203,7 @@ func (w *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
 // wgrpcd refuses all unencrypted connections.
 func NewServer(config *ServerConfig) (*grpc.Server, error) {
-	serverCert, err := tls.LoadX509KeyPair(config.ServerCertFilename, config.ServerKeyFilename)
+	serverCert, err := tls.X509KeyPair(config.ServerCertBytes, config.ServerKeyBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load server certificate and key: %w", err)
 	}

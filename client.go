@@ -23,7 +23,7 @@ type Client struct {
 
 // NewClient returns a client configured with
 func NewClient(config *ClientConfig) (*Client, error) {
-	clientCert, err := tls.LoadX509KeyPair(config.ClientCertFilename, config.ClientKeyFilename)
+	clientCert, err := tls.X509KeyPair(config.ClientCertBytes, config.ClientKeyBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load client certificate and key. %w", err)
 	}

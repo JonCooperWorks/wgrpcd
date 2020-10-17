@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -36,10 +37,20 @@ func main() {
 		}
 	}()
 
+	serverKeyBytes, err := ioutil.ReadFile(*serverKeyFilename)
+	if err != nil {
+		log.Fatalf("failed to read server key %s: %v", *listenAddress, err)
+	}
+
+	serverCertBytes, err := ioutil.ReadFile(*serverCertFilename)
+	if err != nil {
+		log.Fatalf("failed to read server cert %s: %v", *listenAddress, err)
+	}
+
 	config := &wgrpcd.ServerConfig{
-		ServerKeyFilename:  *serverKeyFilename,
-		ServerCertFilename: *serverCertFilename,
-		CACertFilename:     *caCertFilename,
+		ServerKeyBytes:  serverKeyBytes,
+		ServerCertBytes: serverCertBytes,
+		CACertFilename:  *caCertFilename,
 	}
 	server, err := wgrpcd.NewServer(config)
 	if err != nil {

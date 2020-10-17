@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -22,12 +23,22 @@ func init() {
 }
 
 func main() {
+	clientKeyBytes, err := ioutil.ReadFile(*clientKeyFilename)
+	if err != nil {
+		log.Fatalf("failed to read client key: %v", err)
+	}
+
+	clientCertBytes, err := ioutil.ReadFile(*clientCertFilename)
+	if err != nil {
+		log.Fatalf("failed to read server cert: %v", err)
+	}
+
 	config := &wgrpcd.ClientConfig{
-		ClientKeyFilename:  *clientKeyFilename,
-		ClientCertFilename: *clientCertFilename,
-		CACertFilename:     *caCertFilename,
-		GrpcAddress:        *wgrpcdAddress,
-		DeviceName:         *wgDeviceName,
+		ClientKeyBytes:  clientKeyBytes,
+		ClientCertBytes: clientCertBytes,
+		CACertFilename:  *caCertFilename,
+		GrpcAddress:     *wgrpcdAddress,
+		DeviceName:      *wgDeviceName,
 	}
 
 	client, err := wgrpcd.NewClient(config)
