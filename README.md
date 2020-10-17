@@ -25,9 +25,19 @@ Usage of wgrpcd:
         -server-key is the wgrpcd SSL key. (default "serverkey.pem")
 ```
 
+`wgrpcd` doesn't maintain any state to limit attack surface.
+This means `wgrpcd` does not:
++ Allocate IP Addresses
++ Set DNS providers
++ Limit access between connected devices
++ Monitor VPN traffic
+
+If you need these, you'll need to build it yourself.
+You can look at [wireguardhttps](https://github.com/joncooperworks/wireguardhttps) as an example of how to build some of those things on top of `wgrpcd`.
+
 ## API Operations
-+ Create peer and get provisioned .conf (one operation to minimize the time the private key is in memory)
-+ Regenerate peer .conf and revoke old private key 
++ Create peer and get provisioned config (one operation to minimize the time the private key is in memory)
++ Regenerate peer config and revoke old private key 
 + Remove peer and revoke old private key
 + Change wireguard listen port
 + View registered peers
