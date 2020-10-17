@@ -48,13 +48,15 @@ To create a client, pass a `wgrpcd.ClientConfig` struct to `wgrpcd.NewConfig`.
 ```
 // ClientConfig contains all information needed to configure a wgrpcd.Client.
 type ClientConfig struct {
-	GrpcAddress        string
-	DeviceName         string
-	ClientCertFilename string
-	ClientKeyFilename  string
-	CACertFilename     string
+	GrpcAddress     string
+	DeviceName      string
+	ClientCertBytes []byte
+	ClientKeyBytes  []byte
+	CACertFilename  string
 }
 ```
+
+You can decrypt a key and pass it as  `ClientKeyBytes` key before passing it to the `wgrpcd.Client` for added client security.
 
 Go clients of `wgrpcd` should use this instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
