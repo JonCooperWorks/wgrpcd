@@ -2,6 +2,10 @@
 
 [![GoDoc reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/joncooperworks/wgrpcd)
 
+## Warning
+`wgrpcd` has not been audited and is not suitable for production workloads.
+It's still under heavy development and is a hobby project to be used with [targetpractice.network](https://targetpractice.network) and other projects I develop in my spare time.
+Reach out to me on [Twitter](https://twitter.com/joncooperworks) if you're interested in using `wgrpcd` in production.
 
 ## Overview
 `wgrpcd` controls a Wireguard instance, exposing operations over a gRPC API.
