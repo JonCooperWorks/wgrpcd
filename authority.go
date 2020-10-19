@@ -16,7 +16,7 @@ const (
 )
 
 // AuthProvider validates a token based on some criteria.
-// It's meant to allow integration with third party auth providers like Azure AD, AWS Cognito.
+// It's meant to allow integration with third party auth providers like Azure AD, AWS Cognito or a custom auth scheme.
 // It should return true if a request is authorized and false if it isn't.
 // Implementations should only return error if the provider returned an error, such as network failure.
 type AuthProvider func(authorization []string) (bool, error)
