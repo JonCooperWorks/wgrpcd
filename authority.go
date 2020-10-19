@@ -33,7 +33,7 @@ type Authority struct {
 func (a *Authority) Authorize(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.InvalidArgument, errorMessage)
+		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
 	}
 
 	// The keys within metadata.MD are normalized to lowercase.
