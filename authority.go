@@ -23,7 +23,7 @@ type AuthProvider func(authorization []string) (bool, error)
 
 // Authority allows wgrpcd to determine who is sending a request and check with a authorizer if the client is allowed to interact with wgrpcd.
 // A client is either allowed to access wgrpcd or denied: there are no privilege levels.
-// We delegate token validation to the IsAuthorized function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
+// We delegate validation to the IsAuthorized function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
 type Authority struct {
 	IsAuthorized func(authorization []string) (bool, error)
 	Logger       *log.Logger
