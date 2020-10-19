@@ -238,9 +238,9 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	}
 
 	if config.AuthProvider != nil {
-		authority.IsValidToken = config.AuthProvider
+		authority.IsAuthorized = config.AuthProvider
 	} else {
-		authority.IsValidToken = NoAuthProvider
+		authority.IsAuthorized = NoAuth
 	}
 
 	rpcServer := grpc.NewServer(

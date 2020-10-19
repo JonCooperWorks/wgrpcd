@@ -23,9 +23,9 @@ type AuthProvider func(authorization []string) (bool, error)
 
 // Authority allows wgrpcd to determine who is sending a request and check with a authorizer if the client is allowed to interact with wgrpcd.
 // A client is either allowed to access wgrpcd or denied: there are no privilege levels.
-// We delegate token validation to a member function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
+// We delegate token validation to the IsAuthorized function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
 type Authority struct {
-	IsValidToken func(authorization []string) (bool, error)
+	IsAuthorized func(authorization []string) (bool, error)
 	Logger       *log.Logger
 }
 
@@ -38,7 +38,7 @@ func (a *Authority) Authorize(ctx context.Context, req interface{}, info *grpc.U
 
 	// The keys within metadata.MD are normalized to lowercase.
 	// See: https://godoc.org/google.golang.org/grpc/metadata#New
-	isValidToken, err := a.IsValidToken(md["authorization"])
+	isValidToken, err := a.IsAuthorized(md["authorization"])
 	if err != nil {
 		a.log(fmt.Sprintf("error validating token: %v", err))
 		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
@@ -47,7 +47,7 @@ func (a *Authority) Authorize(ctx context.Context, req interface{}, info *grpc.U
 	if !isValidToken {
 		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
 	}
-	// Continue execution of handler after ensuring a valid token.
+
 	return handler(ctx, req)
 }
 
