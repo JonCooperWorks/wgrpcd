@@ -232,7 +232,21 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
 	cred := credentials.NewTLS(tlsConfig)
-	rpcServer := grpc.NewServer(grpc.Creds(cred))
+
+	authority := &Authority{
+		Logger: config.Logger,
+	}
+
+	if config.AuthProvider != nil {
+		authority.IsValidToken = config.AuthProvider
+	} else {
+		authority.IsValidToken = NoAuthProvider
+	}
+
+	rpcServer := grpc.NewServer(
+		grpc.Creds(cred),
+		grpc.UnaryInterceptor(authority.Authorize),
+	)
 	RegisterWireguardRPCServer(rpcServer, &Server{})
 	return rpcServer, nil
 }
