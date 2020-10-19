@@ -21,7 +21,7 @@ type Client struct {
 	TLSCredentials credentials.TransportCredentials
 }
 
-// NewClient returns a client configured with
+// NewClient returns a client configured with client TLS certificates and the wgrpcd instance URL.
 func NewClient(config *ClientConfig) (*Client, error) {
 	clientCert, err := tls.X509KeyPair(config.ClientCertBytes, config.ClientKeyBytes)
 	if err != nil {
