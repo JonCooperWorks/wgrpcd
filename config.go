@@ -1,13 +1,17 @@
 package wgrpcd
 
-import "log"
+import (
+	"log"
+
+	"google.golang.org/grpc/metadata"
+)
 
 //ServerConfig contains all information a caller needs to create a new wgrpcd.Server.
 type ServerConfig struct {
 	ServerKeyBytes  []byte
 	ServerCertBytes []byte
 	CACertFilename  string
-	AuthProvider    func([]string) (bool, error)
+	AuthProvider    func(metadata.MD) (bool, error)
 	Logger          *log.Logger
 }
 

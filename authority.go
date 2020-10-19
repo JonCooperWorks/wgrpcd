@@ -12,20 +12,24 @@ import (
 )
 
 const (
-	errorMessage = "invalid token"
+	errorMessage = "unauthorized"
 )
 
-// AuthProvider validates a token based on some criteria.
-// It's meant to allow integration with third party auth providers like Azure AD, AWS Cognito or a custom auth scheme.
+var (
+	errUnauthorized = status.Errorf(codes.Unauthenticated, errorMessage)
+)
+
+// AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
+// It's meant to allow integration with a custom auth scheme.
 // It should return true if a request is authorized and false if it isn't.
 // Implementations should only return error if the provider returned an error, such as network failure.
-type AuthProvider func(authorization []string) (bool, error)
+type AuthProvider func(md metadata.MD) (bool, error)
 
 // Authority allows wgrpcd to determine who is sending a request and check with a authorizer if the client is allowed to interact with wgrpcd.
 // A client is either allowed to access wgrpcd or denied: there are no privilege levels.
 // We delegate validation to the IsAuthorized function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
 type Authority struct {
-	IsAuthorized func(authorization []string) (bool, error)
+	IsAuthorized func(md metadata.MD) (bool, error)
 	Logger       *log.Logger
 }
 
@@ -33,19 +37,17 @@ type Authority struct {
 func (a *Authority) Authorize(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
+		return nil, errUnauthorized
 	}
 
-	// The keys within metadata.MD are normalized to lowercase.
-	// See: https://godoc.org/google.golang.org/grpc/metadata#New
-	isAuthorized, err := a.IsAuthorized(md["authorization"])
+	isAuthorized, err := a.IsAuthorized(md)
 	if err != nil {
-		a.log(fmt.Sprintf("error validating token: %v", err))
-		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
+		a.log(fmt.Sprintf("error in authorization: %v", err))
+		return nil, errUnauthorized
 	}
 
 	if !isAuthorized {
-		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
+		return nil, errUnauthorized
 	}
 
 	return handler(ctx, req)
