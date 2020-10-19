@@ -79,13 +79,13 @@ func (c *Client) CreatePeer(ctx context.Context, deviceName string, allowedIPs [
 	if err != nil {
 		return nil, err
 	}
-	PeerConfigInfo := &PeerConfigInfo{
+	peerConfigInfo := &PeerConfigInfo{
 		PrivateKey:      response.GetPrivateKey(),
 		PublicKey:       response.GetPublicKey(),
 		AllowedIPs:      allowedIPs,
 		ServerPublicKey: response.GetServerPublicKey(),
 	}
-	return PeerConfigInfo, nil
+	return peerConfigInfo, nil
 }
 
 // RekeyPeer wraps the server's RekeyPeer operation and returns the updated credentials.
@@ -107,13 +107,13 @@ func (c *Client) RekeyPeer(ctx context.Context, deviceName string, oldPublicKey 
 		return nil, err
 	}
 
-	PeerConfigInfo := &PeerConfigInfo{
+	peerConfigInfo := &PeerConfigInfo{
 		PrivateKey:      response.GetPrivateKey(),
 		PublicKey:       response.GetPublicKey(),
 		ServerPublicKey: response.GetServerPublicKey(),
 		AllowedIPs:      allowedIPs,
 	}
-	return PeerConfigInfo, nil
+	return peerConfigInfo, nil
 }
 
 // ChangeListenPort changes a wgrpcd's Wireguard server's listen port
