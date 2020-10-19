@@ -41,7 +41,7 @@ func (a *Authority) Authorize(ctx context.Context, req interface{}, info *grpc.U
 	isValidToken, err := a.IsValidToken(md["authorization"])
 	if err != nil {
 		a.log(fmt.Sprintf("error validating token: %v", err))
-		return nil, status.Errorf(codes.Internal, errorMessage)
+		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
 	}
 
 	if !isValidToken {
