@@ -38,13 +38,13 @@ func (a *Authority) Authorize(ctx context.Context, req interface{}, info *grpc.U
 
 	// The keys within metadata.MD are normalized to lowercase.
 	// See: https://godoc.org/google.golang.org/grpc/metadata#New
-	isValidToken, err := a.IsAuthorized(md["authorization"])
+	isAuthorized, err := a.IsAuthorized(md["authorization"])
 	if err != nil {
 		a.log(fmt.Sprintf("error validating token: %v", err))
 		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
 	}
 
-	if !isValidToken {
+	if !isAuthorized {
 		return nil, status.Errorf(codes.Unauthenticated, errorMessage)
 	}
 
