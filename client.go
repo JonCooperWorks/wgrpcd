@@ -22,10 +22,8 @@ type PeerConfigInfo struct {
 }
 
 // Client interfaces with the wgrpcd API and marshals data between Go and the underlying transport.
-// It allows controlling a single device at a time.
 type Client struct {
 	GrpcAddress       string
-	DeviceName        string
 	TLSCredentials    credentials.TransportCredentials
 	AdditionalOptions []grpc.DialOption
 }
