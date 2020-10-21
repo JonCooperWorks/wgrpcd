@@ -103,7 +103,8 @@ This package exports an API client that handles gRPC connections and handles inp
 
 There's a [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) that handles loading SSL credentials and performs some input validation before sending it over the wire in [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
 
-To create a client, pass a [wgrpcd.ClientConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ClientConfig) struct to [wgrpcd.NewClient](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewClient).
+To create a client, pass a [wgrpcd.ClientConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ClientConfig) struct to [wgrpcd.NewClient](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewClient). 
+You can use [wgrpcd.OAuth2ClientCredentials](https://godoc.org/github.com/JonCooperWorks/wgrpcd#OAuth2ClientCredentials) to generate a `grpc.DialOption` that conects to an OAuth2 provider.
 
 ```
 // ClientConfig contains all information needed to configure a wgrpcd.Client.
