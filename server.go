@@ -275,6 +275,7 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	if config.AuthProvider != nil {
 		authority.IsAuthorized = config.AuthProvider
 	} else {
+		config.Logger.Printf("WARNING: running wgrpcd using only client certificate auth")
 		authority.IsAuthorized = NoAuth
 	}
 
