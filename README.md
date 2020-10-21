@@ -64,7 +64,7 @@ Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Iden
 Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentials and makes logs more granular.
 
 ### Other OAuth2 M2M
-`wgrpcd` does not have any dependency on auth0 servers.
+`wgrpcd` does not contact auth0's servers, and does not actually depend on auth0 itself at all.
 It can use any OAuth2 provider that implements [auth0's M2M scheme](https://auth0.com/blog/using-m2m-authorization/).
 You can implement this scheme yourself and pass the relevant values using the same flags if you don't want to use auth0.
 
