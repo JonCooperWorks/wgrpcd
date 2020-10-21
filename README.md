@@ -19,6 +19,12 @@ They should instead generate a new private key if they ever need a new configura
 
 ```
 Usage of wgrpcd:
+  -auth0
+        -auth0 enables OAuth2 authentication of clients using auth0's machine-to-machine auth.
+  -auth0-api-identifier string
+        -auth0-api-identifier is the API identifier given by auth0 when setting up a machine-to-machine app.
+  -auth0-domain string
+        -auth0-domain is the domain auth0 gives when setting up a machine-to-machine app.
   -ca-cert string
         -ca-cert is the CA that client certificates will be signed with. (default "cacert.pem")
   -listen-address string
