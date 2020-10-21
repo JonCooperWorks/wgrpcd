@@ -107,11 +107,13 @@ To create a client, pass a [wgrpcd.ClientConfig](https://godoc.org/github.com/Jo
 
 ```
 // ClientConfig contains all information needed to configure a wgrpcd.Client.
+// Client authentication can be configured using the Options []DialOption.
 type ClientConfig struct {
 	GRPCAddress     string
 	ClientCertBytes []byte
 	ClientKeyBytes  []byte
 	CACertFilename  string
+	Options         []grpc.DialOption
 }
 ```
 

@@ -24,9 +24,10 @@ type PeerConfigInfo struct {
 // Client interfaces with the wgrpcd API and marshals data between Go and the underlying transport.
 // It allows controlling a single device at a time.
 type Client struct {
-	GrpcAddress    string
-	DeviceName     string
-	TLSCredentials credentials.TransportCredentials
+	GrpcAddress       string
+	DeviceName        string
+	TLSCredentials    credentials.TransportCredentials
+	AdditionalOptions []grpc.DialOption
 }
 
 // NewClient returns a client configured with client TLS certificates and the wgrpcd instance URL.
@@ -59,15 +60,17 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	// Create a new TLS credentials based on the TLS configuration
 	cred := credentials.NewTLS(tlsConfig)
 	return &Client{
-		GrpcAddress:    config.GRPCAddress,
-		TLSCredentials: cred,
+		GrpcAddress:       config.GRPCAddress,
+		TLSCredentials:    cred,
+		AdditionalOptions: config.Options,
 	}, nil
 }
 
 // connection returns a GRPC connection to ensure all gRPC connections are done in a consistent way.
 // Callers of this must Close() the connection themselves.
 func (c *Client) connection() (*grpc.ClientConn, error) {
-	return grpc.Dial(c.GrpcAddress, grpc.WithTransportCredentials(c.TLSCredentials))
+	opts := append(c.AdditionalOptions, grpc.WithTransportCredentials(c.TLSCredentials))
+	return grpc.Dial(c.GrpcAddress, opts...)
 }
 
 // CreatePeer calls the server's CreatePeer method and returns a Wireguard config for the newly created peer.
