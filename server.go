@@ -6,8 +6,12 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
+	"path/filepath"
 
+	"golang.org/x/crypto/acme/autocert"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -238,10 +242,13 @@ func (s *Server) authResult(ctx context.Context) *AuthResult {
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
 // wgrpcd refuses all unencrypted connections.
 func NewServer(config *ServerConfig) (*grpc.Server, error) {
-	serverCert, err := tls.X509KeyPair(config.ServerCertBytes, config.ServerKeyBytes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load server certificate and key: %w", err)
+	certManager := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(config.Hostname),
+		Cache:      autocert.DirCache(cacheDir(config.Hostname)),
 	}
+
+	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
 
 	// Load the CA certificate
 	trustedCert, err := ioutil.ReadFile(config.CACertFilename)
@@ -258,11 +265,10 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	// Create the TLS configuration
 	// Since this is gRPC, we can enforce TLSv1.3.
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{serverCert},
-		RootCAs:      certPool,
-		ClientCAs:    certPool,
-		MinVersion:   tls.VersionTLS13,
-		MaxVersion:   tls.VersionTLS13,
+		GetCertificate: certManager.GetCertificate,
+		ClientCAs:      certPool,
+		MinVersion:     tls.VersionTLS13,
+		MaxVersion:     tls.VersionTLS13,
 	}
 
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
@@ -285,4 +291,17 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	)
 	RegisterWireguardRPCServer(rpcServer, &Server{logger: config.Logger})
 	return rpcServer, nil
+}
+
+func cacheDir(hostname string) (dir string) {
+	dir = filepath.Join(os.TempDir(), "cache-golang-autocert-"+hostname)
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		log.Println("Found cache dir:", dir)
+		return dir
+	}
+	if err := os.MkdirAll(dir, 0700); err == nil {
+		return dir
+	}
+
+	panic("couldnt create cert cache directory")
 }

@@ -11,7 +11,7 @@ Reach out to me on [Twitter](https://twitter.com/joncooperworks) if you're inter
 `wgrpcd` controls a Wireguard instance, exposing operations over a gRPC API.
 This process must run with permissions to manipulate Wireguard interfaces and as such is bound to localhost by default, but can be publicly exposed to let an application control `wgrpcd` from a different server.
 No matter where it's bound, it must be configured to use [mTLS](https://developers.cloudflare.com/access/service-auth/mtls) with TLSv1.3.
-Keep all key material in a safe place, like [Azure Key Vault](https://godoc.org/github.com/Azure/azure-sdk-for-go/services/keyvault/v7.0/keyvault).
+Keep all CA key material in a safe place, like [Azure Key Vault](https://godoc.org/github.com/Azure/azure-sdk-for-go/services/keyvault/v7.0/keyvault).
 This gRPC API is meant to be called by a lower privileged application that can provide services on top of Wireguard that interact with the general internet.
 It intentionally exposes minimal functionality to limit the attack surface.
 Clients have no good reason to retrieve a private key once it has been created.
@@ -27,12 +27,10 @@ Usage of wgrpcd:
         -auth0-domain is the domain auth0 gives when setting up a machine-to-machine app.
   -ca-cert string
         -ca-cert is the CA that client certificates will be signed with. (default "cacert.pem")
+  -hostname string
+        -hostname is the domain name of the Wireguard server.
   -listen-address string
         -listen-address specifies the host:port pair to listen on. (default "localhost:15002")
-  -server-cert string
-        -server-cert is the wgrpcd SSL certificate. (default "servercert.pem")
-  -server-key string
-        -server-key is the wgrpcd SSL key. (default "serverkey.pem")
 ```
 
 `wgrpcd` doesn't maintain any state to limit attack surface.
@@ -56,6 +54,7 @@ You can look at [wireguardhttps](https://github.com/joncooperworks/wireguardhttp
 `wgrpcd` uses mTLS to limit access to the gRPC API.
 Unencrypted connections will be rejected.
 Client certificates must be signed by the Certificate Authority passed with the `-ca-cert` flag.
+`wgrpcd` will automatically get a SSL certificate for itself using Let's Encrypt.
 
 ### auth0
 `wgrcpd` also supports optional OAuth2 using [auth0](https://auth0.com/)'s [Machine to Machine](https://auth0.com/machine-to-machine) offering.

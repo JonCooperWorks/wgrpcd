@@ -3,7 +3,6 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
@@ -12,9 +11,8 @@ import (
 )
 
 var (
+	hostname           = flag.String("hostname", "", "-hostname is the domain name of the Wireguard server.")
 	listenAddress      = flag.String("listen-address", "localhost:15002", "-listen-address specifies the host:port pair to listen on.")
-	serverKeyFilename  = flag.String("server-key", "serverkey.pem", "-server-key is the wgrpcd SSL key.")
-	serverCertFilename = flag.String("server-cert", "servercert.pem", "-server-cert is the wgrpcd SSL certificate.")
 	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that client certificates will be signed with.")
 	auth0Domain        = flag.String("auth0-domain", "", "-auth0-domain is the domain auth0 gives when setting up a machine-to-machine app.")
 	auth0APIIdentifier = flag.String("auth0-api-identifier", "", "-auth0-api-identifier is the API identifier given by auth0 when setting up a machine-to-machine app.")
@@ -23,6 +21,10 @@ var (
 
 func init() {
 	flag.Parse()
+
+	if _, err := url.Parse(*hostname); err != nil {
+		log.Fatalf("-hostname must be a domain name")
+	}
 	if *useAuth0 {
 		if *auth0Domain == "" || *auth0APIIdentifier == "" {
 			log.Fatalf("-auth0-domain and -auth0-api-identifier must be set when using auth0.")
@@ -46,20 +48,9 @@ func main() {
 		}
 	}()
 
-	serverKeyBytes, err := ioutil.ReadFile(*serverKeyFilename)
-	if err != nil {
-		log.Fatalf("failed to read server key %s: %v", *listenAddress, err)
-	}
-
-	serverCertBytes, err := ioutil.ReadFile(*serverCertFilename)
-	if err != nil {
-		log.Fatalf("failed to read server cert %s: %v", *listenAddress, err)
-	}
-
 	config := &wgrpcd.ServerConfig{
-		ServerKeyBytes:  serverKeyBytes,
-		ServerCertBytes: serverCertBytes,
-		CACertFilename:  *caCertFilename,
+		Hostname:       *hostname,
+		CACertFilename: *caCertFilename,
 	}
 
 	if *useAuth0 {
