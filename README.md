@@ -79,7 +79,7 @@ See [wgrpcd.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/wgrpcd/
 type AuthProvider func(md metadata.MD) (*AuthResult, error)
 ```
 
-Then, pass it in a [ServerConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ServerConfig) to [NewServer](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewServer) and serve it like a regular gRPC server.
+Once you've created an AuthProvider implementing the authentication scheme, pass it in a [ServerConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ServerConfig) to [NewServer](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewServer) and serve it like a regular gRPC server.
 
 ```
 //ServerConfig contains all information a caller needs to create a new wgrpcd.Server.
