@@ -240,6 +240,7 @@ func (s *Server) authResult(ctx context.Context) *AuthResult {
 }
 
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
+// It will automatically fetch a SSL certificate from Let's Encrypt.
 // wgrpcd refuses all unencrypted connections.
 func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	certManager := autocert.Manager{
