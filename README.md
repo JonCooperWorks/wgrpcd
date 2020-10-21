@@ -52,6 +52,12 @@ You can look at [wireguardhttps](https://github.com/joncooperworks/wireguardhttp
 + Change wireguard listen port
 + View registered peers
 
+## Authentication
+`wgrpcd` uses SSL client certificates to limit access to the gRPC API.
+`wgrcpd` also supports optional OAuth2 using [auth0](https://auth0.com/)'s [Machine to Machine](https://auth0.com/machine-to-machine) offering.
+Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-auth0-domain` and `-auth0-api-identifier` flags.
+Using wgrpcd with auth0 makes it easier to revoke compromised clients' access and makes logs more granular.
+
 ## Using the API
 ```wgrpcd``` exposes a gRPC server that controls a Wireguard interfaces.
 By default, it listens on ```localhost:15002```.
@@ -79,11 +85,13 @@ It's possible to use `wgrpcd` clients with encrypted client keys by encrypting t
 At runtime, decrypt the client key before passing its bytes to the `wgrpcd.ClientConfig`.
 This makes it possible to do `git push heroku master` with `wgprcd` clients without putting your client credentials in version control.
 
+
 Go clients of `wgrpcd` should use [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
 
 There's an example client in [wg-info.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/example/wg-info.go) that displays all connected Wireguard interfaces.
 The client needs to be configured for mTLS with a client certificate, key and CA certificate for validating the server.
+
 ```
 Usage of wg-info:
   -ca-cert string
