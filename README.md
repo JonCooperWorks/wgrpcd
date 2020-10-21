@@ -63,6 +63,11 @@ I use it to put `wgrpcd` clients on Heroku while being able to revoke access and
 Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-auth0-domain` and `-auth0-api-identifier` flags.
 Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentials and makes logs more granular.
 
+### Other OAuth2 M2M
+`wgrpcd` does not have any dependency on auth0 servers.
+It can use any OAuth2 provider that implements [auth0's M2M scheme](https://auth0.com/blog/using-m2m-authorization/).
+You can implement this scheme yourself and pass the relevant values using the same flags if you don't want to use auth0.
+
 ## Using the API
 ```wgrpcd``` exposes a gRPC server that controls a Wireguard interfaces.
 By default, it listens on ```localhost:15002```.
