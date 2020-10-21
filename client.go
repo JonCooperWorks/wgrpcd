@@ -13,6 +13,14 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+// PeerConfigInfo contains all information needed to configure a Wireguard peer.
+type PeerConfigInfo struct {
+	PrivateKey      string
+	PublicKey       string
+	AllowedIPs      []net.IPNet
+	ServerPublicKey string
+}
+
 // Client interfaces with the wgrpcd API and marshals data between Go and the underlying transport.
 // It allows controlling a single device at a time.
 type Client struct {

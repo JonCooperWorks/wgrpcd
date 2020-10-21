@@ -22,10 +22,11 @@ const (
 // Server implements the operations exposed in the profobuf definitions for the gRPC server.
 type Server struct {
 	UnimplementedWireguardRPCServer
+	logger Logger
 }
 
 // CreatePeer adds a new Wireguard peer to the VPN.
-func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*CreatePeerResponse, error) {
+func (s *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*CreatePeerResponse, error) {
 	wireguard, err := New(request.GetDeviceName())
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -44,7 +45,9 @@ func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*C
 		return nil, status.Errorf(codes.Internal, "error generating private key")
 	}
 
-	peerConfig, err := wireguard.AddNewPeer(allowedIPs, key.PublicKey())
+	auth := s.authResult(ctx)
+	publicKey := key.PublicKey()
+	peerConfig, err := wireguard.AddNewPeer(allowedIPs, publicKey)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, status.Errorf(codes.NotFound, "that wireguard device does not exist")
@@ -52,6 +55,7 @@ func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*C
 		return nil, status.Errorf(codes.Internal, "error adding peer to wireguard interface: %v", err)
 	}
 
+	s.logger.Printf("Client '%s' added peer '%s'", auth.ClientIdentifier, publicKey.String())
 	response := &CreatePeerResponse{
 		PublicKey:       peerConfig.PublicKey.String(),
 		PrivateKey:      key.String(),
@@ -62,7 +66,8 @@ func (w *Server) CreatePeer(ctx context.Context, request *CreatePeerRequest) (*C
 }
 
 // RekeyPeer revokes a client's old public key and replaces it with a new one.
-func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*RekeyPeerResponse, error) {
+func (s *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*RekeyPeerResponse, error) {
+
 	wireguard, err := New(request.GetDeviceName())
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -85,6 +90,10 @@ func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*Rek
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid public key: %v", err)
 	}
+
+	auth := s.authResult(ctx)
+	s.logger.Printf("Client '%s' attempting to rekey peer '%s'", auth.ClientIdentifier, publicKey.String())
+
 	peerConfig, err := wireguard.RekeyClient(allowedIPs, publicKey, key.PublicKey())
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -93,6 +102,7 @@ func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*Rek
 		return nil, status.Errorf(codes.Internal, "error rekeying peer: %v", err)
 	}
 
+	s.logger.Printf("Client '%s' rekeyed peer '%s'", auth.ClientIdentifier, publicKey.String())
 	response := &RekeyPeerResponse{
 		PublicKey:       peerConfig.PublicKey.String(),
 		PrivateKey:      key.String(),
@@ -103,7 +113,7 @@ func (w *Server) RekeyPeer(ctx context.Context, request *RekeyPeerRequest) (*Rek
 }
 
 // RemovePeer deletes a peer from the Wireguard interface.
-func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*RemovePeerResponse, error) {
+func (s *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*RemovePeerResponse, error) {
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -112,6 +122,10 @@ func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*R
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid public key: %v", err)
 	}
+
+	auth := s.authResult(ctx)
+	s.logger.Printf("Client '%s' attempting to remove peer '%s'", auth.ClientIdentifier, publicKey.String())
+
 	err = wireguard.RemovePeer(publicKey)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -120,6 +134,8 @@ func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*R
 		return nil, status.Errorf(codes.Internal, "error removing peer: %v", err)
 	}
 
+	s.logger.Printf("Client '%s' removed peer '%s'", auth.ClientIdentifier, publicKey.String())
+
 	response := &RemovePeerResponse{
 		Removed: true,
 	}
@@ -127,7 +143,10 @@ func (w *Server) RemovePeer(ctx context.Context, request *RemovePeerRequest) (*R
 }
 
 // ListPeers returns all peers from a Wireguard device.
-func (w *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*ListPeersResponse, error) {
+func (s *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*ListPeersResponse, error) {
+	auth := s.authResult(ctx)
+	s.logger.Printf("Client '%s' listing peers", auth.ClientIdentifier)
+
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -160,7 +179,10 @@ func (w *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*Lis
 
 // ChangeListenPort updates the listening port wireguard is running on.
 // It can be used to allow coordination with a firewall.
-func (w *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPortRequest) (*ChangeListenPortResponse, error) {
+func (s *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPortRequest) (*ChangeListenPortResponse, error) {
+	auth := s.authResult(ctx)
+	s.logger.Printf("Client '%s' changing listen port", auth.ClientIdentifier)
+
 	wireguard := &Wireguard{
 		DeviceName: request.GetDeviceName(),
 	}
@@ -184,7 +206,10 @@ func (w *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPort
 }
 
 // Devices shows all Wireguard interfaces that can be controlled with wgrpcd.
-func (w *Server) Devices(ctx context.Context, request *DevicesRequest) (*DevicesResponse, error) {
+func (s *Server) Devices(ctx context.Context, request *DevicesRequest) (*DevicesResponse, error) {
+	auth := s.authResult(ctx)
+	s.logger.Printf("Client '%s' looking up devices", auth.ClientIdentifier)
+
 	devices, err := Devices()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error listing devices: %v", err)
@@ -198,6 +223,16 @@ func (w *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 		Devices: deviceNames,
 	}
 	return response, nil
+}
+
+func (s *Server) authResult(ctx context.Context) *AuthResult {
+	k := authContextKey(authKeyName)
+	v := ctx.Value(k)
+	if v == nil {
+		panic("there should always be an AuthResult on an authenticated handler")
+	}
+
+	return v.(*AuthResult)
 }
 
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
@@ -245,8 +280,8 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 
 	rpcServer := grpc.NewServer(
 		grpc.Creds(cred),
-		grpc.UnaryInterceptor(authority.Authorize),
+		grpc.UnaryInterceptor(authority.UnaryInterceptor),
 	)
-	RegisterWireguardRPCServer(rpcServer, &Server{})
+	RegisterWireguardRPCServer(rpcServer, &Server{logger: config.Logger})
 	return rpcServer, nil
 }
