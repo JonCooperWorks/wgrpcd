@@ -68,6 +68,30 @@ Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentia
 It can use any OAuth2 provider that implements [auth0's M2M scheme](https://auth0.com/blog/using-m2m-authorization/).
 You can implement this scheme yourself and pass the relevant values using the same flags if you don't want to use auth0.
 
+### Custom Auth Schemes
+You can add support for custom auth schemes using the [AuthProvider](https://godoc.org/github.com/JonCooperWorks/wgrpcd#AuthProvider) function type if you use `wgrpcd` as a library with a new driver program.
+See [wgrpcd.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/wgrpcd/wgrpcd.go) and [auth0.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/auth0.go) for an example of how to do that.
+
+```
+// AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
+// It's meant to allow integration with a custom auth scheme.
+// Implementations return error if authentication failed.
+type AuthProvider func(md metadata.MD) (*AuthResult, error)
+```
+
+Then, pass it in a [ServerConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ServerConfig) to [NewServer](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewServer) and serve it like a regular gRPC server.
+
+```
+//ServerConfig contains all information a caller needs to create a new wgrpcd.Server.
+type ServerConfig struct {
+	Hostname       string
+	CACertFilename string
+	AuthProvider   AuthProvider
+	Logger         Logger
+}
+```
+
+
 ## Using the API
 ```wgrpcd``` exposes a gRPC server that controls a Wireguard interfaces.
 By default, it listens on ```localhost:15002```.
