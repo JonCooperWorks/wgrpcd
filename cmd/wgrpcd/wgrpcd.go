@@ -22,7 +22,7 @@ var (
 func init() {
 	flag.Parse()
 
-	if _, err := url.Parse(*hostname); err != nil {
+	if _, err := url.Parse(*hostname); err != nil || *hostname == "" {
 		log.Fatalf("-hostname must be a domain name")
 	}
 	if *useAuth0 {

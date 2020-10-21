@@ -7,11 +7,24 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/url"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
+
+// TokenSource returns a oauth2 TokenSource using the client credentials flow.
+func TokenSource(ctx context.Context, clientID, clientSecret string, tokenURL *url.URL) oauth2.TokenSource {
+	config := &clientcredentials.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		TokenURL:     tokenURL.String(),
+	}
+	return config.TokenSource(ctx)
+}
 
 // PeerConfigInfo contains all information needed to configure a Wireguard peer.
 type PeerConfigInfo struct {
