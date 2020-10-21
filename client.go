@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"net/url"
 
 	"golang.org/x/oauth2/clientcredentials"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -17,18 +16,13 @@ import (
 )
 
 // OAuth2ClientCredentials returns a oauth2 TokenSource using the client credentials flow.
-func OAuth2ClientCredentials(ctx context.Context, clientID, clientSecret string, tokenURL *url.URL) (credentials.PerRPCCredentials, error) {
+func OAuth2ClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL string) grpc.DialOption {
 	config := &clientcredentials.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		TokenURL:     tokenURL.String(),
+		TokenURL:     tokenURL,
 	}
-	token, err := config.Token(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return oauth.NewOauthAccess(token), nil
+	return grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: config.TokenSource(ctx)})
 }
 
 // PeerConfigInfo contains all information needed to configure a Wireguard peer.
