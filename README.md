@@ -53,7 +53,11 @@ You can look at [wireguardhttps](https://github.com/joncooperworks/wireguardhttp
 + View registered peers
 
 ## Authentication
-`wgrpcd` uses SSL client certificates to limit access to the gRPC API.
+`wgrpcd` uses mTLS to limit access to the gRPC API.
+Unencrypted connections will be rejected.
+Client certificates must be signed by the Certificate Authority passed with the `-ca-cert` flag.
+
+### auth0
 `wgrcpd` also supports optional OAuth2 using [auth0](https://auth0.com/)'s [Machine to Machine](https://auth0.com/machine-to-machine) offering.
 Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-auth0-domain` and `-auth0-api-identifier` flags.
 Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentials and makes logs more granular.
