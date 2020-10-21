@@ -41,7 +41,7 @@ type Auth0 struct {
 	JWKSURL       *url.URL
 }
 
-// AuthProvider satisfies the AuthProvider interface so clients can auth0 M2M with wgrpcd over gRPC.
+// AuthProvider satisfies the AuthProvider interface so clients can use auth0 M2M with wgrpcd over gRPC.
 func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 	if len(md["authorization"]) != 1 {
 		return nil, fmt.Errorf("expected JWT in 'authorization' metadata field")
@@ -92,7 +92,7 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 }
 
 func (a *Auth0) getPemCert(token *jwt.Token) (string, error) {
-	cert := ""
+	var cert string
 	resp, err := http.Get(a.JWKSURL.String())
 
 	if err != nil {
@@ -114,8 +114,7 @@ func (a *Auth0) getPemCert(token *jwt.Token) (string, error) {
 	}
 
 	if cert == "" {
-		err := errors.New("unable to find appropriate keys")
-		return cert, err
+		return cert, errors.New("unable to find appropriate keys")
 	}
 
 	return cert, nil
