@@ -59,6 +59,8 @@ Client certificates must be signed by the Certificate Authority passed with the 
 
 ### auth0
 `wgrcpd` also supports optional OAuth2 using [auth0](https://auth0.com/)'s [Machine to Machine](https://auth0.com/machine-to-machine) offering.
+I recommend using it if you will be running `wgrpcd` on a separate host from its client(s).
+I use it to put `wgrpcd` clients on Heroku while being able to revoke access and maintain better audit logs of access to wgrpcd.
 Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-auth0-domain` and `-auth0-api-identifier` flags.
 Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentials and makes logs more granular.
 
