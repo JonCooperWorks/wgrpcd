@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/url"
 
 	"github.com/joncooperworks/wgrpcd"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -16,10 +18,24 @@ var (
 	clientCertFilename = flag.String("client-cert", "clientcert.pem", "-client-cert is the client SSL certificate.")
 	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that server certificates will be signed with.")
 	wgDeviceName       = flag.String("wireguard-interface", "wg0", "-wireguard-interface is the name of the wireguard interface.")
+	useOauth2          = flag.Bool("oauth2", false, "-oauth2 allows wg-info to use oauth2")
+	clientID           = flag.String("client-id", "", "-client-id is the oauth2 client id")
+	clientSecret       = flag.String("client-secret", "", "-client-secret is the oauth2 client secret")
+	tokenURL           = flag.String("token-url", "", "-token-url is the oauth2 client credentials token URL")
 )
 
 func init() {
 	flag.Parse()
+
+	if *useOauth2 {
+		if *clientID == "" || *clientSecret == "" || *tokenURL == "" {
+			log.Fatalf("-client-id, -client-secret and -token-url are required")
+		}
+
+		if _, err := url.Parse(*tokenURL); err != nil {
+			log.Fatalf("-token-url must be a valid URL")
+		}
+	}
 }
 
 func main() {
@@ -33,11 +49,18 @@ func main() {
 		log.Fatalf("failed to read server cert: %v", err)
 	}
 
+	var opts []grpc.DialOption
+	if *useOauth2 {
+		creds := wgrpcd.OAuth2ClientCredentials(context.Background(), *clientID, *clientSecret, *tokenURL)
+		opts = append(opts, creds)
+	}
+
 	config := &wgrpcd.ClientConfig{
 		ClientKeyBytes:  clientKeyBytes,
 		ClientCertBytes: clientCertBytes,
 		CACertFilename:  *caCertFilename,
 		GRPCAddress:     *wgrpcdAddress,
+		Options:         opts,
 	}
 
 	client, err := wgrpcd.NewClient(config)
