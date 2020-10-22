@@ -163,6 +163,8 @@ func (s *Server) ListPeers(ctx context.Context, request *ListPeersRequest) (*Lis
 		return nil, status.Errorf(codes.Internal, "error listing peers: %v", err)
 	}
 
+	s.logger.Printf("Client '%s' retrieved peers", auth.ClientIdentifier)
+
 	peers := []*Peer{}
 	for _, dp := range devicePeers {
 		peer := &Peer{
@@ -203,6 +205,8 @@ func (s *Server) ChangeListenPort(ctx context.Context, request *ChangeListenPort
 		return nil, status.Errorf(codes.Internal, "error changing listen port: %v", err)
 	}
 
+	s.logger.Printf("Client '%s' changed listen port", auth.ClientIdentifier)
+
 	response := &ChangeListenPortResponse{
 		NewListenPort: int32(wireguard.ListenPort),
 	}
@@ -218,6 +222,8 @@ func (s *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error listing devices: %v", err)
 	}
+
+	s.logger.Printf("Client '%s' looked up devices", auth.ClientIdentifier)
 
 	deviceNames := []string{}
 	for _, device := range devices {
@@ -274,10 +280,7 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
 	cred := credentials.NewTLS(tlsConfig)
-
-	authority := &Authority{
-		Logger: config.Logger,
-	}
+	authority := &Authority{Logger: config.Logger}
 
 	if config.AuthProvider != nil {
 		authority.IsAuthorized = config.AuthProvider
