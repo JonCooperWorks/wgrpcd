@@ -1,10 +1,14 @@
 package wgrpcd
 
-import "google.golang.org/grpc"
+import (
+	"crypto/tls"
+
+	"google.golang.org/grpc"
+)
 
 //ServerConfig contains all information a caller needs to create a new wgrpcd.Server.
 type ServerConfig struct {
-	Hostname       string
+	TLSConfig      *tls.Config
 	CACertFilename string
 	AuthProvider   AuthProvider
 	Logger         Logger

@@ -2,16 +2,22 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
+	"os"
+	"path/filepath"
 
 	"github.com/joncooperworks/wgrpcd"
 )
 
 var (
-	hostname           = flag.String("hostname", "", "-hostname is the domain name of the Wireguard server.")
+	certFilename       = flag.String("cert-filename", "servercert.pem", "-cert-filename server's SSL certificate.")
+	keyFilename        = flag.String("key-filename", "serverkey.pem", "-key-filename is the server's SSL key.")
 	listenAddress      = flag.String("listen-address", "localhost:15002", "-listen-address specifies the host:port pair to listen on.")
 	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that client certificates will be signed with.")
 	auth0Domain        = flag.String("auth0-domain", "", "-auth0-domain is the domain auth0 gives when setting up a machine-to-machine app.")
@@ -22,9 +28,6 @@ var (
 func init() {
 	flag.Parse()
 
-	if _, err := url.Parse(*hostname); err != nil || *hostname == "" {
-		log.Fatalf("-hostname must be a domain name")
-	}
 	if *useAuth0 {
 		if *auth0Domain == "" || *auth0APIIdentifier == "" {
 			log.Fatalf("-auth0-domain and -auth0-api-identifier must be set when using auth0.")
@@ -48,8 +51,34 @@ func main() {
 		}
 	}()
 
+	// Load the CA certificate
+	trustedCert, err := ioutil.ReadFile(*caCertFilename)
+	if err != nil {
+		log.Fatalf("failed to load trusted certificate: %v", err)
+	}
+
+	// Put the CA certificate to certificate pool
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(trustedCert) {
+		log.Fatalf("failed to append trusted certificate to certificate pool: %v", err)
+	}
+
+	serverCert, err := tls.LoadX509KeyPair(*certFilename, *keyFilename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create the TLS configuration
+	// Since this is gRPC, we can enforce TLSv1.3.
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientCAs:    certPool,
+		MinVersion:   tls.VersionTLS13,
+		MaxVersion:   tls.VersionTLS13,
+	}
+
 	config := &wgrpcd.ServerConfig{
-		Hostname:       *hostname,
+		TLSConfig:      tlsConfig,
 		CACertFilename: *caCertFilename,
 	}
 
@@ -85,4 +114,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to start gRPC server. %s.", err)
 	}
+}
+
+func cacheDir(hostname string) (dir string) {
+	dir = filepath.Join(os.TempDir(), "cache-golang-autocert-"+hostname)
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		log.Println("Found cache dir:", dir)
+		return dir
+	}
+	if err := os.MkdirAll(dir, 0700); err == nil {
+		return dir
+	}
+
+	panic("couldnt create cert cache directory")
 }
