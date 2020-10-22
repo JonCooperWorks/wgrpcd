@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -48,13 +49,10 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 	}
 
 	tokenString := md["authorization"][0]
+	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok && token.Header["alg"] != signingMethod {
 			return nil, fmt.Errorf("unexpected signing method: expected %s, got %v", signingMethod, token.Header["alg"])
-		}
-
-		if !token.Valid {
-			return nil, fmt.Errorf("invalid auth0 token")
 		}
 
 		claims := token.Claims.(jwt.MapClaims)

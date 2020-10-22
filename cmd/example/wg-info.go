@@ -22,6 +22,7 @@ var (
 	clientID           = flag.String("client-id", "", "-client-id is the oauth2 client id")
 	clientSecret       = flag.String("client-secret", "", "-client-secret is the oauth2 client secret")
 	tokenURL           = flag.String("token-url", "", "-token-url is the oauth2 client credentials token URL")
+	audience           = flag.String("audience", "", "-audience is the auth0 audience")
 )
 
 func init() {
@@ -29,7 +30,7 @@ func init() {
 
 	if *useOauth2 {
 		if *clientID == "" || *clientSecret == "" || *tokenURL == "" {
-			log.Fatalf("-client-id, -client-secret and -token-url are required")
+			log.Fatalf("-client-id, -client-secret, -audience and -token-url are required")
 		}
 
 		if _, err := url.Parse(*tokenURL); err != nil {
@@ -51,7 +52,7 @@ func main() {
 
 	var opts []grpc.DialOption
 	if *useOauth2 {
-		creds := wgrpcd.OAuth2ClientCredentials(context.Background(), *clientID, *clientSecret, *tokenURL)
+		creds := wgrpcd.OAuth2ClientCredentials(context.Background(), *clientID, *clientSecret, *tokenURL, *audience)
 		opts = append(opts, creds)
 	}
 

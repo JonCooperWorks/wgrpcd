@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/url"
 
 	"golang.org/x/oauth2/clientcredentials"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -17,11 +18,14 @@ import (
 
 // OAuth2ClientCredentials returns a grpc.DialOption that adds an OAuth2 client that uses the client credentials flow.
 // It is meant to be used with auth0's machine to machine OAuth2.
-func OAuth2ClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL string) grpc.DialOption {
+func OAuth2ClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL, audience string) grpc.DialOption {
+	params := url.Values{}
+	params.Add("audience", audience)
 	config := &clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     tokenURL,
+		ClientID:       clientID,
+		ClientSecret:   clientSecret,
+		TokenURL:       tokenURL,
+		EndpointParams: params,
 	}
 	return grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: config.TokenSource(ctx)})
 }
