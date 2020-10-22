@@ -45,19 +45,19 @@ type Client struct {
 func NewClient(config *ClientConfig) (*Client, error) {
 	clientCert, err := tls.X509KeyPair(config.ClientCertBytes, config.ClientKeyBytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load client certificate and key. %w", err)
+		return nil, fmt.Errorf("failed to load client certificate and key: %w", err)
 	}
 
 	// Load the CA certificate
 	trustedCert, err := ioutil.ReadFile(config.CACertFilename)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load trusted certificate. %w", err)
+		return nil, fmt.Errorf("failed to load trusted certificate: %w", err)
 	}
 
 	// Put the CA certificate to certificate pool
 	certPool := x509.NewCertPool()
 	if !certPool.AppendCertsFromPEM(trustedCert) {
-		return nil, fmt.Errorf("failed to append trusted certificate to certificate pool. %w", err)
+		return nil, fmt.Errorf("failed to append trusted certificate to certificate pool: %w", err)
 	}
 
 	// Create the TLS configuration
