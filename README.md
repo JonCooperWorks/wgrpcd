@@ -27,8 +27,10 @@ Usage of wgrpcd:
         -auth0-domain is the domain auth0 gives when setting up a machine-to-machine app.
   -ca-cert string
         -ca-cert is the CA that client certificates will be signed with. (default "cacert.pem")
-  -hostname string
-        -hostname is the domain name of the Wireguard server.
+  -cert-filename string
+        -cert-filename server's SSL certificate. (default "servercert.pem")
+  -key-filename string
+        -key-filename is the server's SSL key. (default "serverkey.pem")
   -listen-address string
         -listen-address specifies the host:port pair to listen on. (default "localhost:15002")
 ```
@@ -84,7 +86,7 @@ Once you've created an AuthProvider implementing the authentication scheme, pass
 ```
 //ServerConfig contains all information a caller needs to create a new wgrpcd.Server.
 type ServerConfig struct {
-	Hostname       string
+	TLSConfig      *tls.Config
 	CACertFilename string
 	AuthProvider   AuthProvider
 	Logger         Logger
@@ -130,13 +132,23 @@ The client needs to be configured for mTLS with a client certificate, key and CA
 
 ```
 Usage of wg-info:
+  -audience string
+        -audience is the auth0 audience
   -ca-cert string
         -ca-cert is the CA that server certificates will be signed with. (default "cacert.pem")
   -client-cert string
         -client-cert is the client SSL certificate. (default "clientcert.pem")
+  -client-id string
+        -client-id is the oauth2 client id
   -client-key string
         -client-key is the client SSL key. (default "clientkey.pem")
+  -client-secret string
+        -client-secret is the oauth2 client secret
+  -oauth2
+        -oauth2 allows wg-info to use oauth2
+  -token-url string
+        -token-url is the oauth2 client credentials token URL
   -wgrpcd-address string
         -wgrpcd-address is the wgrpcd gRPC server on localhost. It must be running to run this program. (default "localhost:15002")
   -wireguard-interface string
-        -device name is the name of the wireguard interface. (default "wg0")
+        -wireguard-interface is the name of the wireguard interface. (default "wg0")
