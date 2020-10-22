@@ -22,7 +22,6 @@ var (
 // AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
 // It's meant to allow integration with a custom auth scheme.
 // Implementations return error if authentication failed.
-// It will be logged if a log.Logger is passed to the Authority.
 type AuthProvider func(md metadata.MD) (*AuthResult, error)
 
 // authContextKey is a key for values injected into the context by an Authority's UnaryInterceptor.
