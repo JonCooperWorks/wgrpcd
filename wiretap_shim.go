@@ -6,10 +6,14 @@ import (
 	"net"
 )
 
-// Packet is an IP packet with the source and destination parsed out for easier routing.
+// Packet is an IP packet with the source and destination parsed out for flow logs.
+// It is meant to be similar to those provided by AWS and Azure at the VPC level for individual clients.
 type Packet struct {
-	SrcIP net.IP
-	DstIP net.IP
+	SrcIP    net.IP
+	DstIP    net.IP
+	SrcPort  int16
+	DstPort  int16
+	Protocol string
 }
 
 // WiretapConfig contains all necessary information to configure a Wiretap.
