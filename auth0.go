@@ -33,12 +33,6 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
-// PermissionsClaims holds the permissions in the JWT token scope.
-type PermissionsClaims struct {
-	Scope string `json:"scope"`
-	jwt.StandardClaims
-}
-
 // Auth0 uses auth0's Machine to Machine authentication to secure a wgrpcd instance.
 // It validates a client's temporary access token using a user-supplied auth0 public key.
 // See https://auth0.com/machine-to-machine for more details.
@@ -89,12 +83,8 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 	// auth0 puts the client's OAuth2 client ID in the sub field.
 	clientIdentifier := claims["sub"].(string)
 
-	scopeClaims, ok := token.Claims.(*PermissionsClaims)
-	if !ok {
-		return nil, fmt.Errorf("expected scope")
-	}
-
-	permissions := strings.Split(scopeClaims.Scope, " ")
+	scopes := claims["scope"].(string)
+	permissions := strings.Split(scopes, " ")
 	return &AuthResult{
 		ClientIdentifier: clientIdentifier,
 		Timestamp:        time.Now(),
