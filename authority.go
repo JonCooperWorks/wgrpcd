@@ -31,15 +31,16 @@ type authContextKey string
 type AuthResult struct {
 	ClientIdentifier string
 	Timestamp        time.Time
+	Permissions      []string
 }
 
 // Authority allows wgrpcd to determine who is sending a request and check with a authorizer if the client is allowed to interact with wgrpcd.
 // A client is either allowed to access wgrpcd or denied: there are no privilege levels.
-// We delegate validation to the IsAuthorized function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
+// We delegate validation to the IsAuthenticated function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
 // We log failed authentication attempts with the error message if the Authority has a non-nil log.Logger.
 type Authority struct {
-	IsAuthorized func(md metadata.MD) (*AuthResult, error)
-	Logger       Logger
+	IsAuthenticated func(md metadata.MD) (*AuthResult, error)
+	Logger          Logger
 }
 
 // UnaryInterceptor ensures a request is authenticated based on its metadata before invoking the server handler.
@@ -49,16 +50,31 @@ func (a *Authority) UnaryInterceptor(ctx context.Context, req interface{}, info 
 		return nil, errUnauthorized
 	}
 
-	authResult, err := a.IsAuthorized(md)
+	authResult, err := a.IsAuthenticated(md)
 	if err != nil {
 		a.Logger.Printf("Error authorizing user: %v", err)
 		return nil, errUnauthorized
 	}
 
-	a.Logger.Printf("Successfully authenticated client with identifier '%s'", authResult.ClientIdentifier)
+	if !hasPermission(authResult, info.FullMethod) {
+		a.Logger.Printf("Client '%s' does not have permission to access method '%s'", authResult.ClientIdentifier, info.FullMethod)
+		return nil, errUnauthorized
+	}
+
+	a.Logger.Printf("Successfully authenticated client with identifier '%s' and permissions: %+v", authResult.ClientIdentifier, authResult.Permissions)
 
 	// Insert auth result into the context so handlers can determine which client is performing an action.
 	authKey := authContextKey(authKeyName)
 	ctx = context.WithValue(ctx, authKey, authResult)
 	return handler(ctx, req)
+}
+
+func hasPermission(user *AuthResult, handler string) bool {
+	for _, permission := range user.Permissions {
+		if permission == handler {
+			return true
+		}
+	}
+
+	return false
 }

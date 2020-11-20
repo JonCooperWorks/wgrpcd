@@ -245,10 +245,10 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	authority := &Authority{Logger: config.Logger}
 
 	if config.AuthProvider != nil {
-		authority.IsAuthorized = config.AuthProvider
+		authority.IsAuthenticated = config.AuthProvider
 	} else {
 		config.Logger.Printf("WARNING: running wgrpcd using only client certificate auth")
-		authority.IsAuthorized = NoAuth
+		authority.IsAuthenticated = NoAuth
 	}
 
 	rpcServer := grpc.NewServer(

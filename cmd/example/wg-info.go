@@ -5,7 +5,6 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/url"
 
 	"github.com/joncooperworks/wgrpcd"
@@ -80,21 +79,6 @@ func main() {
 
 	log.Println("Found", len(devices), "devices:", devices)
 	peers, err := client.ListPeers(context.Background(), *wgDeviceName)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	log.Println("Found", len(peers), "peers")
-	log.Println(peers)
-
-	_, network, _ := net.ParseCIDR("10.0.0.3/32")
-	credentials, err := client.CreatePeer(context.Background(), *wgDeviceName, []net.IPNet{*network})
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	log.Println(credentials)
-
-	peers, err = client.ListPeers(context.Background(), *wgDeviceName)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

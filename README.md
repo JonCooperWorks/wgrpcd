@@ -65,6 +65,32 @@ I recommend using it if you will be running `wgrpcd` on a separate host from its
 I use it to put `wgrpcd` clients on Heroku while being able to revoke access and maintain better audit logs of access to `wgrpcd`.
 Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-auth0-domain` and `-auth0-api-identifier` flags.
 Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentials and makes logs more granular.
+`wgrpcd` clients authenticated with auth0 will only be able to access the gRPC method names specified as OAuth2 scopes.
+
+```
+// Permissions allow wgrpcd to limit access to methods on its gRPC server based on configuration with an OpenID provider.
+// The permissions in this file are meant to allow admins to limit access to wgrpcd functions.
+// These permissions should be passed as scopes in the JWT from the OpenID provider.
+const (
+	// PermissionChangeListenPort allows a client to change the Wireguard VPN's listening port
+	PermissionChangeListenPort = "/wgrpcd.WireguardRPC/ChangeListenPort"
+
+	// PermissionCreatePeer allows a client to create a new peer on the Wiregurd interface.
+	PermissionCreatePeer = "/wgrpcd.WireguardRPC/CreatePeer"
+
+	// PermissionRekeyPeer allows a client to rekey a peer.
+	PermissionRekeyPeer = "/wgrpcd.WireguardRPC/RekeyPeer"
+
+	// PermissionRemovePeer allows a client to remove a peer from the interface.
+	PermissionRemovePeer = "/wgrpcd.WireguardRPC/RemovePeer"
+
+	// PermissionListPeers allows a client to list active peers.
+	PermissionListPeers = "/wgrpcd.WireguardRPC/ListPeers"
+
+	// PermissionListDevices allows a client to list active Wireguard interfaces on a host.
+	PermissionListDevices = "/wgrpcd.WireguardRPC/Devices"
+)
+```
 
 ### Other OAuth2 M2M
 `wgrpcd` does not contact auth0's servers, and does not actually depend on auth0 itself at all.
@@ -73,7 +99,7 @@ You can implement this scheme yourself and pass the relevant values using the sa
 
 ### Custom Auth Schemes
 You can add support for custom auth schemes using the [AuthProvider](https://godoc.org/github.com/JonCooperWorks/wgrpcd#AuthProvider) function type if you use `wgrpcd` as a library with a new driver program.
-See [wgrpcd.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/wgrpcd/wgrpcd.go) and [auth0.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/auth0.go) for an example of how to do that.
+See [wgrpcd.go](wgrpcd.go) and [auth0.go](auth0.go) for an example of how to do that.
 
 ```
 // AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
@@ -99,12 +125,12 @@ type ServerConfig struct {
 ```wgrpcd``` exposes a gRPC server that controls a Wireguard interfaces.
 By default, it listens on ```localhost:15002```.
 It can be connected to with any language, but this RPC server is intended to be used by [wireguardhttps](https://github.com/joncooperworks/wireguardhttps).
-The protobuf service, requests and responses can be found in [pbdefinitions.proto](https://github.com/JonCooperWorks/wgrpcd/blob/master/pbdefinitions.proto).
+The protobuf service, requests and responses can be found in [wgrpcd.proto](wgrpcd.proto).
 
 This package exports an API client that handles gRPC connections and handles input validation.
 
 
-There's a [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) that handles loading SSL credentials and performs some input validation before sending it over the wire in [client.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/client.go).
+There's a [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) that handles loading SSL credentials and performs some input validation before sending it over the wire in [client.go](client.go).
 
 To create a client, pass a [wgrpcd.ClientConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ClientConfig) struct to [wgrpcd.NewClient](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewClient). 
 You can use [wgrpcd.OAuth2ClientCredentials](https://godoc.org/github.com/JonCooperWorks/wgrpcd#OAuth2ClientCredentials) to generate a `grpc.DialOption` that conects to an OAuth2 provider.
@@ -128,7 +154,7 @@ This makes it possible to do `git push heroku master` with `wgprcd` clients with
 Go clients of `wgrpcd` should use [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
 
-There's an example client in [wg-info.go](https://github.com/JonCooperWorks/wgrpcd/blob/master/cmd/example/wg-info.go) that displays all connected Wireguard interfaces.
+There's an example client in [wg-info.go](wg-info.go) that displays all connected Wireguard interfaces.
 The client needs to be configured for mTLS with a client certificate, key and CA certificate for validating the server.
 
 ```
