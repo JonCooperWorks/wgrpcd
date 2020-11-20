@@ -83,7 +83,7 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 	// auth0 puts the client's OAuth2 client ID in the sub field.
 	clientIdentifier := claims["sub"].(string)
 
-	scopes := claims["scope"].(string)
+	scopes, _ := claims["scope"].(string)
 	permissions := strings.Split(scopes, " ")
 	return &AuthResult{
 		ClientIdentifier: clientIdentifier,
