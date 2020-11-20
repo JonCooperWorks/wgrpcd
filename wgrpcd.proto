@@ -9,6 +9,7 @@ service WireguardRPC {
     rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse) {}
     rpc ListPeers(ListPeersRequest) returns (ListPeersResponse) {}
     rpc Devices(DevicesRequest) returns (DevicesResponse) {}
+    rpc LiveFlow(DeviceFlowRequest) returns (stream DeviceFlowResponse)
 }
 
 message ChangeListenPortRequest {
@@ -74,4 +75,14 @@ message DevicesRequest {}
 
 message DevicesResponse {
     repeated string devices = 1;
+}
+
+message DeviceFlowRequest {
+    string deviceName = 1;
+}
+
+message DeviceFlowResponse {
+    string srcIP = 1;
+    string dstIP = 2;
+    string protocol = 3;
 }

@@ -3,6 +3,7 @@ package wgrpcd
 import (
 	"context"
 	"os"
+	"runtime"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
@@ -227,6 +228,14 @@ func (s *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 	return response, nil
 }
 
+// LiveFlow returns the flow logs currently being sent over the VPN.
+func (s *Server) LiveFlow(request *DeviceFlowRequest, stream WireguardRPC_LiveFlowServer) error {
+	if runtime.GOOS != "linux" {
+		return status.Errorf(codes.Unimplemented, "wiretap is only supported on Linux hosts")
+	}
+	return nil
+}
+
 func (s *Server) authResult(ctx context.Context) *AuthResult {
 	k := authContextKey(authKeyName)
 	v := ctx.Value(k)
@@ -239,7 +248,6 @@ func (s *Server) authResult(ctx context.Context) *AuthResult {
 
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
 func NewServer(config *ServerConfig) (*grpc.Server, error) {
-
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
 	cred := credentials.NewTLS(config.TLSConfig)
 	authority := &Authority{Logger: config.Logger}

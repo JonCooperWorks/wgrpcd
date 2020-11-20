@@ -3,16 +3,13 @@ package wgrpcd
 import (
 	"context"
 	"log"
-	"net"
 )
 
-// Packet is an IP packet with the source and destination parsed out for flow logs.
+// Flow is an IP packet with the source and destination parsed out for flow logs.
 // It is meant to be similar to those provided by AWS and Azure at the VPC level for individual clients.
-type Packet struct {
-	SrcIP    net.IP
-	DstIP    net.IP
-	SrcPort  int16
-	DstPort  int16
+type Flow struct {
+	Src      string
+	Dst      string
 	Protocol string
 }
 
@@ -36,10 +33,15 @@ type Wiretap func(*WiretapConfig) error
 // SubscriptionBroker is a shim that relays packets for a given host to an active listener through a datastore.
 // It is meant to abstract gopacket away from the rest of the program so it can still build on Linux and allow multiple datastores to be used as a broker.
 type SubscriptionBroker interface {
-	// Send takes a packet from the Wireguard interface and passes it to a subscriber if one exists.
-	Send(packet *Packet) error
+	// Send takes a flow from the Wireguard interface and passes it to a subscriber if one exists.
+	Send(deviceName string, flow *Flow) error
 
 	// Receive is meant to allow a listener to pull down flow logs for an IP address.
-	// Receive implementations should close the chan when the context finishes to prevent leaks.
-	Receive(context *context.Context, ipAddress net.IP) <-chan *Packet
+	Receive(ctx context.Context, deviceName string, flows chan<- *Flow) error
+}
+
+// NewSubscriptionBroker returns a broker to relay flow logs from gopacket to a caller.
+// It will return a no-op broker on non-linux OSs.
+func NewSubscriptionBroker() (SubscriptionBroker, error) {
+	return &subscriptionBroker{}, nil
 }

@@ -3,6 +3,7 @@
 package wgrpcd
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/gopacket"
@@ -43,15 +44,30 @@ func CollectFlowLogs(w *WiretapConfig) error {
 
 		for _, layerType := range foundLayerTypes {
 			if layerType == layers.LayerTypeIPv4 {
-				packet := &Packet{
-					SrcIP: ipLayer.SrcIP,
-					DstIP: ipLayer.DstIP,
+				networkFlow := ipLayer.NetworkFlow()
+				flow := &Flow{
+					Src:      networkFlow.Src().String(),
+					Dst:      networkFlow.Dst().String(),
+					Protocol: ipLayer.Protocol.String(),
 				}
-				w.Log("%s -> %s", packet.SrcIP, packet.DstIP)
-				w.Broker.Send(packet)
+				w.Log("%s -> %s", flow.Src, flow.Dst)
+				w.Broker.Send(w.DeviceName, flow)
 			}
 		}
 	}
 
+	return nil
+}
+
+type subscriptionBroker struct {
+}
+
+// Send takes a flow from the Wireguard interface and passes it to a subscriber if one exists.
+func (b *subscriptionBroker) Send(deviceName string, flow *Flow) error {
+	return nil
+}
+
+// Receive allows a gRPC handler to stream flow logs to a client.
+func (b *subscriptionBroker) Receive(ctx context.Context, deviceName string, flows chan<- *Flow) error {
 	return nil
 }

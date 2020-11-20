@@ -44,6 +44,27 @@ type Authority struct {
 
 // UnaryInterceptor ensures a request is authenticated based on its metadata before invoking the server handler.
 func (a *Authority) UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	ctx, err := a.authorizeContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return handler(ctx, req)
+}
+
+// StreamServerInterceptor authenticates streaming connections for flow logs.
+func (a *Authority) StreamServerInterceptor(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	ctx := stream.Context()
+	ctx, err := a.authorizeContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	// TODO: put the new context into the stream.
+	return handler(srv, stream)
+}
+
+func (a *Authority) authorizeContext(ctx context.Context) (context.Context, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, errUnauthorized
@@ -60,5 +81,5 @@ func (a *Authority) UnaryInterceptor(ctx context.Context, req interface{}, info 
 	// Insert auth result into the context so handlers can determine which client is performing an action.
 	authKey := authContextKey(authKeyName)
 	ctx = context.WithValue(ctx, authKey, authResult)
-	return handler(ctx, req)
+	return ctx, nil
 }
