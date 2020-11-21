@@ -17,7 +17,7 @@ var (
 	clientCertFilename = flag.String("client-cert", "clientcert.pem", "-client-cert is the client SSL certificate.")
 	caCertFilename     = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that server certificates will be signed with.")
 	wgDeviceName       = flag.String("wireguard-interface", "wg0", "-wireguard-interface is the name of the wireguard interface.")
-	useOauth2          = flag.Bool("oauth2", false, "-oauth2 allows wg-info to use oauth2")
+	oauth2Provider     = flag.String("openid-provider", "", "-openid-provider specifies the OpenID provider to use. Supported: ('aws', 'auth0')")
 	clientID           = flag.String("client-id", "", "-client-id is the oauth2 client id")
 	clientSecret       = flag.String("client-secret", "", "-client-secret is the oauth2 client secret")
 	tokenURL           = flag.String("token-url", "", "-token-url is the oauth2 client credentials token URL")
@@ -27,7 +27,7 @@ var (
 func init() {
 	flag.Parse()
 
-	if *useOauth2 {
+	if *oauth2Provider != "" {
 		if *clientID == "" || *clientSecret == "" || *tokenURL == "" {
 			log.Fatalf("-client-id, -client-secret, -audience and -token-url are required")
 		}
@@ -50,8 +50,26 @@ func main() {
 	}
 
 	var opts []grpc.DialOption
-	if *useOauth2 {
-		creds := wgrpcd.OAuth2ClientCredentials(context.Background(), *clientID, *clientSecret, *tokenURL, *audience)
+	switch *oauth2Provider {
+	case "auth0":
+		creds := wgrpcd.Auth0ClientCredentials(
+			context.Background(),
+			*clientID,
+			*clientSecret,
+			*tokenURL,
+			*audience,
+		)
+		opts = append(opts, creds)
+
+	case "aws":
+		creds := wgrpcd.AWSCognitoClientCredentials(
+			context.Background(),
+			*clientID,
+			*clientSecret,
+			*tokenURL,
+			wgrpcd.PermissionListDevices,
+			wgrpcd.PermissionListPeers,
+		)
 		opts = append(opts, creds)
 	}
 

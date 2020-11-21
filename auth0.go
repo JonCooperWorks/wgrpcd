@@ -1,36 +1,31 @@
 package wgrpcd
 
 import (
-	"encoding/json"
-	"errors"
+	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/oauth2/clientcredentials"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/oauth"
 	"google.golang.org/grpc/metadata"
 )
 
-const (
-	// JWTs must be signed with RS256.
-	signingMethod = "RS256"
-)
-
-// Jwks is a list of JSONWebKeys from auth0.
-type Jwks struct {
-	Keys []JSONWebKeys `json:"keys"`
-}
-
-// JSONWebKeys is a single JWK from auth0 that the auth0 JWT will be signed with.
-type JSONWebKeys struct {
-	Kty string   `json:"kty"`
-	Kid string   `json:"kid"`
-	Use string   `json:"use"`
-	N   string   `json:"n"`
-	E   string   `json:"e"`
-	X5c []string `json:"x5c"`
+// Auth0ClientCredentials returns a grpc.DialOption that adds an OAuth2 client that uses the client credentials flow.
+// It is meant to be used with auth0's machine to machine OAuth2.
+func Auth0ClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL, audience string) grpc.DialOption {
+	params := url.Values{}
+	params.Add("audience", audience)
+	config := &clientcredentials.Config{
+		ClientID:       clientID,
+		ClientSecret:   clientSecret,
+		TokenURL:       tokenURL,
+		EndpointParams: params,
+	}
+	return grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: config.TokenSource(ctx)})
 }
 
 // Auth0 uses auth0's Machine to Machine authentication to secure a wgrpcd instance.
@@ -66,7 +61,7 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 			return token, fmt.Errorf("invalid issuer, expected %v, got %v", a.Domain, claims["iss"])
 		}
 
-		cert, err := a.getPemCert(token)
+		cert, err := getPemCert(a.JWKSURL, token)
 		if err != nil {
 			return nil, err
 		}
@@ -76,6 +71,10 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -90,33 +89,4 @@ func (a *Auth0) AuthProvider(md metadata.MD) (*AuthResult, error) {
 		Timestamp:        time.Now(),
 		Permissions:      permissions,
 	}, nil
-}
-
-func (a *Auth0) getPemCert(token *jwt.Token) (string, error) {
-	var cert string
-	resp, err := http.Get(a.JWKSURL.String())
-
-	if err != nil {
-		return cert, err
-	}
-	defer resp.Body.Close()
-
-	var jwks = Jwks{}
-	err = json.NewDecoder(resp.Body).Decode(&jwks)
-
-	if err != nil {
-		return cert, err
-	}
-
-	for k := range jwks.Keys {
-		if token.Header["kid"] == jwks.Keys[k].Kid {
-			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
-		}
-	}
-
-	if cert == "" {
-		return cert, errors.New("unable to find appropriate keys")
-	}
-
-	return cert, nil
 }
