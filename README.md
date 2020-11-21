@@ -57,7 +57,6 @@ You can look at [wireguardhttps](https://github.com/joncooperworks/wireguardhttp
 `wgrpcd` uses mTLS to limit access to the gRPC API.
 Unencrypted connections will be rejected.
 Client certificates must be signed by the Certificate Authority passed with the `-ca-cert` flag.
-`wgrpcd` will automatically get a SSL certificate for itself using Let's Encrypt.
 
 ### auth0
 `wgrcpd` also supports optional OAuth2 using [auth0](https://auth0.com/)'s [Machine to Machine](https://auth0.com/machine-to-machine) offering.
