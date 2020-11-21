@@ -36,7 +36,7 @@ type AuthResult struct {
 
 // Authority allows wgrpcd to determine who is sending a request and check with a authorizer if the client is allowed to interact with wgrpcd.
 // We delegate validation to the IsAuthenticated function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
-// We log failed authentication attempts with the error message if the Authority has a non-nil log.Logger.
+// We log failed authentication attempts with the error message.
 type Authority struct {
 	IsAuthenticated func(md metadata.MD) (*AuthResult, error)
 	Logger          Logger
