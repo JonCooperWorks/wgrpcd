@@ -23,7 +23,7 @@ var (
 	caCertFilename      = flag.String("ca-cert", "cacert.pem", "-ca-cert is the CA that client certificates will be signed with.")
 	oauth2Domain        = flag.String("openid-domain", "", "-openid-domain is the domain the OpenID provider gives when setting up a machine-to-machine app.")
 	oauth2APIIdentifier = flag.String("openid-api-identifier", "", "-openid-api-identifier is the API identifier given by the OpenID provider when setting up a machine-to-machine app.")
-	oauth2Provider      = flag.String("openid-provider", "", "-openid-provider enables OAuth2 authentication of clients using OpenID provider's machine-to-machine auth.")
+	oauth2Provider      = flag.String("openid-provider", "", "-openid-provider enables OAuth2 authentication of clients using OpenID provider's machine-to-machine auth. Allowed: (aws, auth0)")
 )
 
 func init() {

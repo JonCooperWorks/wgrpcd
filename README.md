@@ -33,7 +33,7 @@ Usage of wgrpcd:
   -openid-domain string
         -openid-domain is the domain the OpenID provider gives when setting up a machine-to-machine app.
   -openid-provider string
-        -openid-provider enables OAuth2 authentication of clients using OpenID provider's machine-to-machine auth.
+        -openid-provider enables OAuth2 authentication of clients using OpenID provider's machine-to-machine auth. Allowed: (aws, auth0)
 ```
 
 `wgrpcd` doesn't maintain any state to limit attack surface.
