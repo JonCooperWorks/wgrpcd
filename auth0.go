@@ -19,8 +19,7 @@ import (
 
 // Auth0ClientCredentials returns a grpc.DialOption that adds an OAuth2 client that uses the client credentials flow.
 // It is meant to be used with auth0's machine to machine OAuth2.
-// Clients can optionally pass scopes to limit their privileges with the wgrpcd server.
-func Auth0ClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL, audience string, scopes ...string) grpc.DialOption {
+func Auth0ClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL, audience string) grpc.DialOption {
 	params := url.Values{}
 	params.Add("audience", audience)
 	config := &clientcredentials.Config{
@@ -28,7 +27,6 @@ func Auth0ClientCredentials(ctx context.Context, clientID, clientSecret, tokenUR
 		ClientSecret:   clientSecret,
 		TokenURL:       tokenURL,
 		EndpointParams: params,
-		Scopes:         scopes,
 	}
 	return grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: config.TokenSource(ctx)})
 }
