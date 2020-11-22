@@ -123,10 +123,6 @@ func main() {
 
 	err = server.Serve(listener)
 	if err != nil {
-		log.Fatalf("Failed to start server. %s\n", err)
-	}
-
-	if err != nil {
 		log.Fatalf("Failed to start gRPC server. %s.", err)
 	}
 }
