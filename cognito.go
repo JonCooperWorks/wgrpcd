@@ -24,7 +24,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const (
+	claimsUseAccess = "access"
+)
+
 // AWSCognitoClientCredentials returns a grpc.DialOption that uses the client credentials flow with AWS Cognito.
+// Callers can optionally pass the scopes they want for their client in the initial request to limit a client's privileges.
 func AWSCognitoClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL string, scopes ...string) grpc.DialOption {
 	params := url.Values{}
 	config := &clientcredentials.Config{
@@ -100,6 +105,10 @@ func (a *AWSCognito) AuthProvider(md metadata.MD) (*AuthResult, error) {
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
+	tokenUse := claims["token_use"]
+	if tokenUse != claimsUseAccess {
+		return nil, fmt.Errorf("token_use claim must be 'access', got %s", tokenUse)
+	}
 
 	// auth0 puts the client's OAuth2 client ID in the sub field.
 	clientIdentifier := claims["sub"].(string)
