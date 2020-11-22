@@ -21,7 +21,7 @@ var (
 	clientID           = flag.String("client-id", "", "-client-id is the oauth2 client id")
 	clientSecret       = flag.String("client-secret", "", "-client-secret is the oauth2 client secret")
 	tokenURL           = flag.String("token-url", "", "-token-url is the oauth2 client credentials token URL")
-	audience           = flag.String("audience", "", "-audience is the auth0 audience")
+	audience           = flag.String("audience", "", "-audience is the oauth2 audience")
 )
 
 func init() {

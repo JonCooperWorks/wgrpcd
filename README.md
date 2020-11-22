@@ -20,12 +20,6 @@ They should instead generate a new private key if they ever need a new configura
 
 ```
 Usage of wgrpcd:
-  -auth0
-        -auth0 enables OAuth2 authentication of clients using auth0's machine-to-machine auth.
-  -auth0-api-identifier string
-        -auth0-api-identifier is the API identifier given by auth0 when setting up a machine-to-machine app.
-  -auth0-domain string
-        -auth0-domain is the domain auth0 gives when setting up a machine-to-machine app.
   -ca-cert string
         -ca-cert is the CA that client certificates will be signed with. (default "cacert.pem")
   -cert-filename string
@@ -34,6 +28,12 @@ Usage of wgrpcd:
         -key-filename is the server's SSL key. (default "serverkey.pem")
   -listen-address string
         -listen-address specifies the host:port pair to listen on. (default "localhost:15002")
+  -openid-api-identifier string
+        -openid-api-identifier is the API identifier given by the OpenID provider when setting up a machine-to-machine app.
+  -openid-domain string
+        -openid-domain is the domain the OpenID provider gives when setting up a machine-to-machine app.
+  -openid-provider string
+        -openid-provider enables OAuth2 authentication of clients using OpenID provider's machine-to-machine auth.
 ```
 
 `wgrpcd` doesn't maintain any state to limit attack surface.
@@ -64,7 +64,14 @@ I recommend using it if you will be running `wgrpcd` on a separate host from its
 I use it to put `wgrpcd` clients on Heroku while being able to revoke access and maintain better audit logs of access to `wgrpcd`.
 Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-auth0-domain` and `-auth0-api-identifier` flags.
 Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentials and makes logs more granular.
+
+### AWS Cognito
+`wgrpcd` supports [AWS Cognito](https://aws.amazon.com/cognito/) as an Open ID Provider.
+`wgrpcd` clients must be added as an [App Client](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-client-apps.html) using the Client Credentials grant type in Cognito.
+
+### Permissions
 `wgrpcd` clients authenticated with auth0 will only be able to access the gRPC method names specified as OAuth2 scopes.
+On AWS, this means your API Identifier must be `/wgrpcd.WireguardRPC`, and the scope should be named after the method name, like `CreatePeer`.
 
 ```
 // Permissions allow wgrpcd to limit access to methods on its gRPC server based on configuration with an OpenID provider.
@@ -90,11 +97,6 @@ const (
 	PermissionListDevices = "/wgrpcd.WireguardRPC/Devices"
 )
 ```
-
-### Other OAuth2 M2M
-`wgrpcd` does not contact auth0's servers, and does not actually depend on auth0 itself at all.
-It can use any OAuth2 provider that implements [auth0's M2M scheme](https://auth0.com/blog/using-m2m-authorization/).
-You can implement this scheme yourself and pass the relevant values using the same flags if you don't want to use auth0.
 
 ### Custom Auth Schemes
 You can add support for custom auth schemes using the [AuthProvider](https://godoc.org/github.com/JonCooperWorks/wgrpcd#AuthProvider) function type if you use `wgrpcd` as a library with a new driver program.
@@ -170,8 +172,8 @@ Usage of wg-info:
         -client-key is the client SSL key. (default "clientkey.pem")
   -client-secret string
         -client-secret is the oauth2 client secret
-  -oauth2
-        -oauth2 allows wg-info to use oauth2
+  -openid-provider string
+        -openid-provider specifies the OpenID provider to use. Supported: ('aws', 'auth0')
   -token-url string
         -token-url is the oauth2 client credentials token URL
   -wgrpcd-address string
