@@ -104,6 +104,11 @@ const (
 )
 ```
 
+Clients should only request the permissions they need to limit the impact of compromised credentials.
+For example, WireguardHTTPS has no reason to change the listen port of a Wireguard VPN.
+
+![minimal permissions](docs/limiting-permissions.png)
+
 ### Custom Auth Schemes
 You can add support for custom auth schemes using the [AuthProvider](https://godoc.org/github.com/JonCooperWorks/wgrpcd#AuthProvider) function type if you use `wgrpcd` as a library with a new driver program.
 See [wgrpcd.go](wgrpcd.go) and [auth0.go](auth0.go) for an example of how to do that.
