@@ -72,11 +72,12 @@ In order to access the methods on `wgrpcd`, you need to register the permissions
 AWS Cognito sends scopes in the format `API identifier/scope name`. 
 `wgrpcd`'s identifer should be `/wgrpcd.WireguardRPC`, and the scopes should be named after the individual methods, like `CreatePeer` and `RekeyPeer`.
 
+![wgrpcd scopes on AWS](docs/wgrpcd-scopes.png)
+
 ### Permissions
 `wgrpcd` clients authenticated with auth0 will only be able to access the gRPC method names specified as OAuth2 scopes.
 On AWS, this means your API Identifier must be `/wgrpcd.WireguardRPC`, and the scope should be named after the method name, like `CreatePeer`.
 
-![wgrpcd scopes on AWS](docs/wgrpcd-scopes.png)
 
 ```
 // Permissions allow wgrpcd to limit access to methods on its gRPC server based on configuration with an OpenID provider.
