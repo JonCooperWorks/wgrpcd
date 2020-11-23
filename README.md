@@ -68,10 +68,15 @@ Using `wgrpcd` with auth0 makes it easier to revoke compromised client credentia
 ### AWS Cognito
 `wgrpcd` supports [AWS Cognito](https://aws.amazon.com/cognito/) as an Open ID Provider.
 `wgrpcd` clients must be added as an [App Client](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-client-apps.html) using the Client Credentials grant type in Cognito.
+In order to access the methods on `wgrpcd`, you need to register the permissions as scopes in AWS Cognito.
+AWS Cognito sends scopes in the format `API identifier/scope name`. 
+`wgrpcd`'s identifer should be `/wgrpcd.WireguardRPC`, and the scopes should be named after the individual methods, like `CreatePeer` and `RekeyPeer`.
 
 ### Permissions
 `wgrpcd` clients authenticated with auth0 will only be able to access the gRPC method names specified as OAuth2 scopes.
 On AWS, this means your API Identifier must be `/wgrpcd.WireguardRPC`, and the scope should be named after the method name, like `CreatePeer`.
+
+![wgrpcd scopes on AWS](docs/wgrpcd-scopes.png)
 
 ```
 // Permissions allow wgrpcd to limit access to methods on its gRPC server based on configuration with an OpenID provider.
