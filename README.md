@@ -62,7 +62,7 @@ Client certificates must be signed by the Certificate Authority passed with the 
 `wgrcpd` also supports optional OAuth2 using [auth0](https://auth0.com/)'s [Machine to Machine](https://auth0.com/machine-to-machine) offering.
 I recommend using it if you will be running `wgrpcd` on a separate host from its client(s).
 I use it to put `wgrpcd` clients on Heroku while being able to revoke access and maintain better audit logs of access to `wgrpcd`.
-Use the `-auth0` flag to enable OAuth2, and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-openid-domain` and `-openid-api-identifier` flags.
+Pass `auth0` to the `-openid-provider` flag to enable auth0 and pass your auth0 [Domain and API Identifier](https://auth0.com/docs/get-started/set-up-apis) with the `-openid-domain` and `-openid-api-identifier` flags.
 
 In order to access the methods on the gRPC API, you'll have to add scopes to auth0.
 You can copy them from the [Permissions](#permissions) section below.
@@ -70,6 +70,7 @@ You can copy them from the [Permissions](#permissions) section below.
 ![auth0 scopes config](docs/auth0-scopes.png)
 
 ### AWS Cognito
+Pass `aws` to the `-openid-provider` flag to enable auth0 and pass your AWS Cognito Domain and API Identifier with the `-openid-domain` and `-openid-api-identifier` flags.
 `wgrpcd` supports [AWS Cognito](https://aws.amazon.com/cognito/) as an Open ID Provider.
 `wgrpcd` clients must be added as an [App Client](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-client-apps.html) using the Client Credentials grant type in Cognito.
 In order to access the methods on `wgrpcd`, you need to register the permissions as scopes in AWS Cognito.
