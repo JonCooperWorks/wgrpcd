@@ -86,6 +86,13 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
+	err = client.Connect()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	defer client.Close()
+
 	devices, err := client.Devices(context.Background())
 	if err != nil {
 		log.Fatalln(err.Error())

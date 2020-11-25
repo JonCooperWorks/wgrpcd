@@ -26,6 +26,7 @@ type Client struct {
 	GrpcAddress       string
 	TLSCredentials    credentials.TransportCredentials
 	AdditionalOptions []grpc.DialOption
+	conn              *grpc.ClientConn
 }
 
 // NewClient returns a client configured with client TLS certificates and the wgrpcd instance URL.
@@ -71,15 +72,39 @@ func (c *Client) connection() (*grpc.ClientConn, error) {
 	return grpc.Dial(c.GrpcAddress, opts...)
 }
 
+// Connect makes the gRPC client dial the server and maintains a connection until the client is closed with Close.
+func (c *Client) Connect() error {
+	if c.conn == nil {
+		conn, err := c.connection()
+		if err != nil {
+			return err
+		}
+
+		c.conn = conn
+	}
+	return nil
+}
+
+// checkConnection is a sanity check to ensure non-nil connections are not passed and notify a developer that they've made a mistake.
+func (c *Client) checkConnection() {
+	if c.conn == nil {
+		panic("you must call Connect before attempting to call methods on the server")
+	}
+}
+
+// Close closes a client connection and frees the resouces associated with it so a client can be reconnected.
+func (c *Client) Close() {
+	if c.conn != nil {
+		c.conn.Close()
+		c.conn = nil
+	}
+}
+
 // CreatePeer calls the server's CreatePeer method and returns a Wireguard config for the newly created peer.
 func (c *Client) CreatePeer(ctx context.Context, deviceName string, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
-	conn, err := c.connection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
+	c.checkConnection()
 
-	client := NewWireguardRPCClient(conn)
+	client := NewWireguardRPCClient(c.conn)
 	request := &CreatePeerRequest{
 		AllowedIPs: IPNetsToStrings(allowedIPs),
 		DeviceName: deviceName,
@@ -99,13 +124,9 @@ func (c *Client) CreatePeer(ctx context.Context, deviceName string, allowedIPs [
 
 // RekeyPeer wraps the server's RekeyPeer operation and returns the updated credentials.
 func (c *Client) RekeyPeer(ctx context.Context, deviceName string, oldPublicKey wgtypes.Key, allowedIPs []net.IPNet) (*PeerConfigInfo, error) {
-	conn, err := c.connection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
+	c.checkConnection()
 
-	client := NewWireguardRPCClient(conn)
+	client := NewWireguardRPCClient(c.conn)
 	request := &RekeyPeerRequest{
 		PublicKey:  oldPublicKey.String(),
 		AllowedIPs: IPNetsToStrings(allowedIPs),
@@ -127,13 +148,9 @@ func (c *Client) RekeyPeer(ctx context.Context, deviceName string, oldPublicKey 
 
 // ChangeListenPort changes a wgrpcd's Wireguard server's listen port
 func (c *Client) ChangeListenPort(ctx context.Context, deviceName string, listenPort int) (int32, error) {
-	conn, err := c.connection()
-	if err != nil {
-		return 0, err
-	}
-	defer conn.Close()
+	c.checkConnection()
 
-	client := NewWireguardRPCClient(conn)
+	client := NewWireguardRPCClient(c.conn)
 	request := &ChangeListenPortRequest{
 		ListenPort: int32(listenPort),
 		DeviceName: deviceName,
@@ -148,13 +165,9 @@ func (c *Client) ChangeListenPort(ctx context.Context, deviceName string, listen
 
 // RemovePeer removes a peer from the Wireguard server and revokes its access.
 func (c *Client) RemovePeer(ctx context.Context, deviceName string, publicKey wgtypes.Key) (bool, error) {
-	conn, err := c.connection()
-	if err != nil {
-		return false, err
-	}
-	defer conn.Close()
+	c.checkConnection()
 
-	client := NewWireguardRPCClient(conn)
+	client := NewWireguardRPCClient(c.conn)
 	request := &RemovePeerRequest{
 		PublicKey:  publicKey.String(),
 		DeviceName: deviceName,
@@ -169,13 +182,9 @@ func (c *Client) RemovePeer(ctx context.Context, deviceName string, publicKey wg
 
 // ListPeers shows all peers authorized to connect to a Wireguard instance.
 func (c *Client) ListPeers(ctx context.Context, deviceName string) ([]*Peer, error) {
-	conn, err := c.connection()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
+	c.checkConnection()
 
-	client := NewWireguardRPCClient(conn)
+	client := NewWireguardRPCClient(c.conn)
 	request := &ListPeersRequest{
 		DeviceName: deviceName,
 	}
@@ -189,13 +198,9 @@ func (c *Client) ListPeers(ctx context.Context, deviceName string) ([]*Peer, err
 
 // Devices returns all Wireguard interfaces controllable by wgrpcd.
 func (c *Client) Devices(ctx context.Context) ([]string, error) {
-	conn, err := c.connection()
-	if err != nil {
-		return []string{}, err
-	}
-	defer conn.Close()
+	c.checkConnection()
 
-	client := NewWireguardRPCClient(conn)
+	client := NewWireguardRPCClient(c.conn)
 	request := &DevicesRequest{}
 	response, err := client.Devices(ctx, request)
 	if err != nil {
