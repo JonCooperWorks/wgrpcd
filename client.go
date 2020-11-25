@@ -92,7 +92,7 @@ func (c *Client) checkConnection() {
 	}
 }
 
-// Close closes a client connection and frees the resouces associated with it so a client can be reconnected.
+// Close closes a client connection and frees the resouces associated with it.
 func (c *Client) Close() error {
 	if c.conn != nil {
 		return c.conn.Close()
