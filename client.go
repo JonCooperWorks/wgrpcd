@@ -93,11 +93,11 @@ func (c *Client) checkConnection() {
 }
 
 // Close closes a client connection and frees the resouces associated with it so a client can be reconnected.
-func (c *Client) Close() {
+func (c *Client) Close() error {
 	if c.conn != nil {
-		c.conn.Close()
-		c.conn = nil
+		return c.conn.Close()
 	}
+	return nil
 }
 
 // CreatePeer calls the server's CreatePeer method and returns a Wireguard config for the newly created peer.
