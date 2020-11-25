@@ -66,16 +66,11 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	}, nil
 }
 
-// connection returns a GRPC connection to ensure all gRPC connections are done in a consistent way.
-// Callers of this must Close() the connection themselves.
-func (c *Client) connection() (*grpc.ClientConn, error) {
-	opts := append(c.AdditionalOptions, grpc.WithTransportCredentials(c.TLSCredentials))
-	return grpc.Dial(c.GrpcAddress, opts...)
-}
-
 // Connect makes the gRPC client dial the server and maintains a connection until the client is closed with Close.
+// Callers of this must Close() the connection themselves to avoid leaks.
 func (c *Client) Connect() error {
-	conn, err := c.connection()
+	opts := append(c.AdditionalOptions, grpc.WithTransportCredentials(c.TLSCredentials))
+	conn, err := grpc.Dial(c.GrpcAddress, opts...)
 	if err != nil {
 		return err
 	}
