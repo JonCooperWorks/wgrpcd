@@ -1,6 +1,6 @@
 module github.com/joncooperworks/wgrpcd
 
-go 1.14
+go 1.15
 
 require golang.zx2c4.com/wireguard/wgctrl v0.0.0-20200324154536-ceff61240acf
 

@@ -113,7 +113,7 @@ func (c *Client) Connect() error {
 
 // checkConnection is a sanity check to ensure non-nil connections are not passed and notify a developer that they've made a mistake.
 func (c *Client) checkConnection() {
-	if c.conn == nil {
+	if c.conn == nil || c.wireguardClient == nil {
 		panic("you must call Connect before attempting to call methods on the server")
 	}
 }
