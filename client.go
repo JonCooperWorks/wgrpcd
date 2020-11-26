@@ -7,10 +7,31 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"time"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
+)
+
+var (
+	// ConnectTimeout describes the total timeout for establishing a client
+	// connection to the wgrpcd server.
+	ConnectTimeout = time.Duration(10) * time.Second
+
+	// ConnectBackoffMaxDelay configures the dialer to use the
+	// provided maximum delay when backing off after
+	// failed connection attempts.
+	ConnectBackoffMaxDelay = time.Duration(2) * time.Second
+
+	// KeepaliveTime is the interval at which the client sends keepalive
+	// probes to the server.
+	KeepaliveTime = time.Duration(30) * time.Second
+
+	// KeepaliveTimeout is the amount of time the client waits to receive
+	// a response from the server after a keepalive probe.
+	KeepaliveTimeout = time.Duration(20) * time.Second
 )
 
 // PeerConfigInfo contains all information needed to configure a Wireguard peer.
@@ -69,7 +90,17 @@ func NewClient(config *ClientConfig) (*Client, error) {
 // Connect makes the gRPC client dial the server and maintains a connection until the client is closed with Close.
 // Callers of this must Close() the connection themselves to avoid leaks.
 func (c *Client) Connect() error {
-	opts := append(c.AdditionalOptions, grpc.WithTransportCredentials(c.TLSCredentials))
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(c.TLSCredentials),
+		grpc.WithTimeout(ConnectTimeout),
+		grpc.WithBackoffMaxDelay(ConnectBackoffMaxDelay),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:    KeepaliveTime,
+			Timeout: KeepaliveTimeout,
+		}),
+	}
+	opts = append(opts, c.AdditionalOptions...)
+
 	conn, err := grpc.Dial(c.GrpcAddress, opts...)
 	if err != nil {
 		return err
