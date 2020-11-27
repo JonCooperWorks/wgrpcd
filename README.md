@@ -46,6 +46,10 @@ This means `wgrpcd` does not:
 If you need these, you'll need to build it yourself.
 You can look at [wireguardhttps](https://github.com/joncooperworks/wireguardhttps) as an example of how to build some of those things on top of `wgrpcd`.
 
+## Running without root
+You can run this program on Linux without root by setting the `CAP_NET_ADMIN` and `CAP_NET_BIND_SERVICE` capabilities.
+Set them using `sudo setcap CAP_NET_BIND_SERVICE,CAP_NET_ADMIN+eip wgrpcd`
+
 ## API Operations
 + Create peer and get provisioned config (one operation to minimize the time the private key is in memory)
 + Regenerate peer config and revoke old private key 
