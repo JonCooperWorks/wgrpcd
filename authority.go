@@ -11,12 +11,13 @@ import (
 )
 
 const (
-	errorMessage = "unauthorized"
-	authKeyName  = "auth"
+	errorMessageUnauthenticated  = "unauthorized"
+	errorMessagePermissionDenied = "permission denied"
+	authKeyName                  = "auth"
 )
 
 var (
-	errUnauthorized = status.Errorf(codes.Unauthenticated, errorMessage)
+	errUnauthorized = status.Errorf(codes.Unauthenticated, errorMessageUnauthenticated)
 )
 
 // AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
@@ -57,7 +58,7 @@ func (a *Authority) UnaryInterceptor(ctx context.Context, req interface{}, info 
 
 	if !hasPermission(authResult, info.FullMethod) {
 		a.Logger.Printf("Client '%s' does not have permission to access method '%s'", authResult.ClientIdentifier, info.FullMethod)
-		return nil, errUnauthorized
+		return nil, status.Errorf(codes.PermissionDenied, "client '%s' does not have scope: '%s'", authResult.ClientIdentifier, info.FullMethod)
 	}
 
 	a.Logger.Printf("Successfully authenticated client with identifier '%s' and permissions: %+v", authResult.ClientIdentifier, authResult.Permissions)
