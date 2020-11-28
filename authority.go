@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	errorMessageUnauthenticated  = "unauthorized"
-	errorMessagePermissionDenied = "permission denied"
-	authKeyName                  = "auth"
+	errorMessageUnauthenticated = "unauthenticated"
+	authKeyName                 = "auth"
 )
 
 var (
