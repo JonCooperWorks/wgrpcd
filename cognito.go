@@ -31,13 +31,11 @@ const (
 // AWSCognitoClientCredentials returns a grpc.DialOption that uses the client credentials flow with AWS Cognito.
 // Callers can optionally pass the scopes they want for their client in the initial request to limit a client's privileges.
 func AWSCognitoClientCredentials(ctx context.Context, clientID, clientSecret, tokenURL string, scopes ...string) grpc.DialOption {
-	params := url.Values{}
 	config := &clientcredentials.Config{
-		ClientID:       clientID,
-		ClientSecret:   clientSecret,
-		TokenURL:       tokenURL,
-		EndpointParams: params,
-		Scopes:         scopes,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		TokenURL:     tokenURL,
+		Scopes:       scopes,
 	}
 	return grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: config.TokenSource(ctx)})
 }
