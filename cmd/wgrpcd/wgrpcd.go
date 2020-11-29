@@ -9,9 +9,7 @@ import (
 	"log"
 	"net"
 	"net/url"
-	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/joncooperworks/wgrpcd"
 )
@@ -125,17 +123,4 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to start gRPC server. %s.", err)
 	}
-}
-
-func cacheDir(hostname string) (dir string) {
-	dir = filepath.Join(os.TempDir(), "cache-golang-autocert-"+hostname)
-	if _, err := os.Stat(dir); !os.IsNotExist(err) {
-		log.Println("Found cache dir:", dir)
-		return dir
-	}
-	if err := os.MkdirAll(dir, 0700); err == nil {
-		return dir
-	}
-
-	panic("couldnt create cert cache directory")
 }
