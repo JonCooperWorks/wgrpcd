@@ -177,7 +177,7 @@ This makes it possible to do `git push heroku master` with `wgprcd` clients with
 Go clients of `wgrpcd` should use [wgrpcd.Client](https://godoc.org/github.com/JonCooperWorks/wgrpcd#Client) instead of writing their own client implementations.
 If you spot an improvement, please submit a pull request.
 
-There's an example client in [wg-info.go](wg-info.go) that displays all connected Wireguard interfaces.
+There's an example client in [wg-info.go](./example/wg-info.go) that displays all connected Wireguard interfaces.
 The client needs to be configured for mTLS with a client certificate, key and CA certificate for validating the server.
 
 ```
