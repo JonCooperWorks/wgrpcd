@@ -75,17 +75,6 @@ func (a *AWSCognito) AuthProvider(md metadata.MD) (*AuthResult, error) {
 			return nil, fmt.Errorf("unexpected signing method: expected %s, got %v", signingMethod, token.Header["alg"])
 		}
 
-		claims := token.Claims.(jwt.MapClaims)
-		checkAud := claims.VerifyAudience(a.APIIdentifier, false)
-		if !checkAud {
-			return token, fmt.Errorf("invalid audience, expected %s, got %v", a.APIIdentifier, claims["aud"])
-		}
-		// Verify 'iss' claim
-		checkIss := claims.VerifyIssuer(a.Domain.String(), false)
-		if !checkIss {
-			return token, fmt.Errorf("invalid issuer, expected %v, got %v", a.Domain, claims["iss"])
-		}
-
 		cert, err := a.getPemCert(token)
 		if err != nil {
 			return nil, err
@@ -103,6 +92,16 @@ func (a *AWSCognito) AuthProvider(md metadata.MD) (*AuthResult, error) {
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
+	checkAud := claims.VerifyAudience(a.APIIdentifier, false)
+	if !checkAud {
+		return nil, fmt.Errorf("invalid audience, expected %s, got %v", a.APIIdentifier, claims["aud"])
+	}
+	// Verify 'iss' claim
+	checkIss := claims.VerifyIssuer(a.Domain.String(), false)
+	if !checkIss {
+		return nil, fmt.Errorf("invalid issuer, expected %v, got %v", a.Domain, claims["iss"])
+	}
+
 	tokenUse := claims["token_use"]
 	if tokenUse != claimsUseAccess {
 		return nil, fmt.Errorf("token_use claim must be 'access', got %s", tokenUse)
