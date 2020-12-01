@@ -102,6 +102,7 @@ func (a *AWSCognito) AuthProvider(md metadata.MD) (*AuthResult, error) {
 		return nil, fmt.Errorf("invalid issuer, expected %v, got %v", a.Domain, claims["iss"])
 	}
 
+	// AWS Cognito puts a "token_use" claim in the JWT that should be "access" for the client credentials grant.
 	tokenUse := claims["token_use"]
 	if tokenUse != claimsUseAccess {
 		return nil, fmt.Errorf("token_use claim must be 'access', got %s", tokenUse)
