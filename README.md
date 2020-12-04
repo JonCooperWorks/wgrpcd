@@ -131,6 +131,11 @@ See [wgrpcd.go](wgrpcd.go) and [auth0.go](auth0.go) for an example of how to do 
 type AuthFunc func(md metadata.MD) (*AuthResult, error)
 ```
 
+```
+// PermissionFunc determines if an authenticated client is authorized to access a particular gRPC method.
+type PermissionFunc func(permissions []string, info *grpc.UnaryServerInfo) bool
+```
+
 Once you've created an AuthProvider implementing the authentication scheme, pass it in a [ServerConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ServerConfig) to [NewServer](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewServer) and serve it like a regular gRPC server.
 
 ```
@@ -138,7 +143,7 @@ Once you've created an AuthProvider implementing the authentication scheme, pass
 type ServerConfig struct {
 	TLSConfig      *tls.Config
 	CACertFilename string
-	AuthProvider   AuthProvider
+	AuthFunc       AuthFunc
 	Logger         Logger
 }
 ```

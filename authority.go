@@ -25,7 +25,7 @@ var (
 type AuthFunc func(md metadata.MD) (*AuthResult, error)
 
 // PermissionFunc determines if an authenticated client is authorized to access a particular gRPC method.
-// PermissionFunc
+// It takes a list of permissions and the grpc.UnaryServerInfo for the current request.
 type PermissionFunc func(permissions []string, info *grpc.UnaryServerInfo) bool
 
 // authContextKey is a key for values injected into the context by an Authority's UnaryInterceptor.
