@@ -121,14 +121,14 @@ For example, WireguardHTTPS has no reason to change the listen port of a Wiregua
 ![minimal permissions](docs/limiting-permissions.png)
 
 ### Custom Auth Schemes
-You can add support for custom auth schemes using the [AuthProvider](https://godoc.org/github.com/JonCooperWorks/wgrpcd#AuthProvider) function type if you use `wgrpcd` as a library with a new driver program.
+You can add support for custom auth schemes using the [AuthFunc](https://godoc.org/github.com/JonCooperWorks/wgrpcd#AuthFunc) function type if you use `wgrpcd` as a library with a new driver program.
 See [wgrpcd.go](wgrpcd.go) and [auth0.go](auth0.go) for an example of how to do that.
 
 ```
-// AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
+// AuthFunc validates a gRPC request's metadata based on some arbitrary criteria.
 // It's meant to allow integration with a custom auth scheme.
 // Implementations return error if authentication failed.
-type AuthProvider func(md metadata.MD) (*AuthResult, error)
+type AuthFunc func(md metadata.MD) (*AuthResult, error)
 ```
 
 Once you've created an AuthProvider implementing the authentication scheme, pass it in a [ServerConfig](https://godoc.org/github.com/JonCooperWorks/wgrpcd#ServerConfig) to [NewServer](https://godoc.org/github.com/JonCooperWorks/wgrpcd#NewServer) and serve it like a regular gRPC server.
