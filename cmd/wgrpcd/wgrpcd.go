@@ -99,7 +99,7 @@ func main() {
 				APIIdentifier: *oauth2APIIdentifier,
 				JWKSURL:       jwksURL,
 			}
-			config.AuthProvider = auth0.AuthProvider
+			config.AuthFunc = auth0.AuthFunc
 
 		case "aws":
 			awsCognito := &wgrpcd.AWSCognito{
@@ -107,7 +107,7 @@ func main() {
 				APIIdentifier: *oauth2APIIdentifier,
 				JWKSURL:       jwksURL,
 			}
-			config.AuthProvider = awsCognito.AuthProvider
+			config.AuthFunc = awsCognito.AuthFunc
 
 		default:
 			log.Fatalf("Invalid -openid-provider %s. Allowed: (aws, auth0)", *oauth2Provider)

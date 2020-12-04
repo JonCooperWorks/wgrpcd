@@ -19,10 +19,14 @@ var (
 	errUnauthorized = status.Errorf(codes.Unauthenticated, errorMessageUnauthenticated)
 )
 
-// AuthProvider validates a gRPC request's metadata based on some arbitrary criteria.
+// AuthFunc validates a gRPC request's metadata based on some arbitrary criteria.
 // It's meant to allow integration with a custom auth scheme.
 // Implementations return error if authentication failed.
-type AuthProvider func(md metadata.MD) (*AuthResult, error)
+type AuthFunc func(md metadata.MD) (*AuthResult, error)
+
+// PermissionFunc determines if an authenticated client is authorized to access a particular gRPC method.
+// PermissionFunc
+type PermissionFunc func(permissions []string, info *grpc.UnaryServerInfo) bool
 
 // authContextKey is a key for values injected into the context by an Authority's UnaryInterceptor.
 type authContextKey string
@@ -35,10 +39,14 @@ type AuthResult struct {
 }
 
 // Authority allows wgrpcd to determine who is sending a request and check with a authorizer if the client is allowed to interact with wgrpcd.
-// We delegate validation to the IsAuthenticated function so users can integrate wrpcd with any OAuth2 provider, or even a custom auth scheme.
+// We delegate authentication to the IsAuthenticated function so users can integrate wgrpcd with any OAuth2 provider, or even a custom auth scheme.
+// The HasPermissions function allows users to define custom behaviour for permission strings.
+// By default, the Authority will take the method names as permission strings in the AuthResult.
+// See cognito.go for an example.
 // We log failed authentication attempts with the error message.
 type Authority struct {
 	IsAuthenticated func(md metadata.MD) (*AuthResult, error)
+	HasPermissions  func(permissions []string, info *grpc.UnaryServerInfo) bool
 	Logger          Logger
 }
 
@@ -55,7 +63,7 @@ func (a *Authority) UnaryInterceptor(ctx context.Context, req interface{}, info 
 		return nil, errUnauthorized
 	}
 
-	if !hasPermission(authResult, info.FullMethod) {
+	if a.isAuthorized(authResult, info) {
 		a.Logger.Printf("Client '%s' does not have permission to access method '%s'", authResult.ClientIdentifier, info.FullMethod)
 		return nil, status.Errorf(codes.PermissionDenied, "client '%s' does not have scope: '%s'", authResult.ClientIdentifier, info.FullMethod)
 	}
@@ -68,9 +76,16 @@ func (a *Authority) UnaryInterceptor(ctx context.Context, req interface{}, info 
 	return handler(ctx, req)
 }
 
-func hasPermission(user *AuthResult, handler string) bool {
-	for _, permission := range user.Permissions {
-		if permission == handler {
+func (a *Authority) isAuthorized(user *AuthResult, info *grpc.UnaryServerInfo) bool {
+	if a.HasPermissions == nil {
+		return hasPermissions(user.Permissions, info)
+	}
+	return a.HasPermissions(user.Permissions, info)
+}
+
+func hasPermissions(permissions []string, info *grpc.UnaryServerInfo) bool {
+	for _, permission := range permissions {
+		if permission == info.FullMethod {
 			return true
 		}
 	}

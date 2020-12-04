@@ -62,8 +62,8 @@ type AWSCognito struct {
 	JWKSURL       *url.URL
 }
 
-// AuthProvider satisfies the AuthProvider interface so clients can use auth0 M2M with wgrpcd over gRPC.
-func (a *AWSCognito) AuthProvider(md metadata.MD) (*AuthResult, error) {
+// AuthFunc satisfies the AuthFunc interface so clients can use auth0 M2M with wgrpcd over gRPC.
+func (a *AWSCognito) AuthFunc(md metadata.MD) (*AuthResult, error) {
 	if len(md["authorization"]) != 1 {
 		return nil, fmt.Errorf("expected JWT in 'authorization' metadata field")
 	}

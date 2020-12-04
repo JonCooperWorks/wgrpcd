@@ -10,7 +10,7 @@ import (
 type ServerConfig struct {
 	TLSConfig      *tls.Config
 	CACertFilename string
-	AuthProvider   AuthProvider
+	AuthFunc       AuthFunc
 	Logger         Logger
 }
 

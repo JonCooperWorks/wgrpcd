@@ -244,8 +244,8 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	cred := credentials.NewTLS(config.TLSConfig)
 	authority := &Authority{Logger: config.Logger}
 
-	if config.AuthProvider != nil {
-		authority.IsAuthenticated = config.AuthProvider
+	if config.AuthFunc != nil {
+		authority.IsAuthenticated = config.AuthFunc
 	} else {
 		config.Logger.Printf("WARNING: running wgrpcd using only client certificate auth")
 		authority.IsAuthenticated = NoAuth
