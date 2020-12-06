@@ -11,17 +11,8 @@ import (
 // Use this to use wgrpcd with only mTLS client certifcate auth.
 // mTLS client certifcate auth is sufficient if wgrpcd and its client(s) are on the same server.
 func NoAuth(md metadata.MD) (*grpcauth.AuthResult, error) {
-	permissions := []string{
-		PermissionChangeListenPort,
-		PermissionCreatePeer,
-		PermissionListPeers,
-		PermissionRekeyPeer,
-		PermissionListDevices,
-		PermissionRemovePeer,
-	}
 	return &grpcauth.AuthResult{
 		ClientIdentifier: "mTLS",
 		Timestamp:        time.Now(),
-		Permissions:      permissions,
 	}, nil
 }

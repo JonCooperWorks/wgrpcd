@@ -12,6 +12,7 @@ type ServerConfig struct {
 	TLSConfig      *tls.Config
 	CACertFilename string
 	AuthFunc       grpcauth.AuthFunc
+	PermissionFunc grpcauth.PermissionFunc
 	Logger         Logger
 }
 
