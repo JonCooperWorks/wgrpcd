@@ -16,10 +16,6 @@ const (
 	maxPort = 65535
 )
 
-const (
-	authKeyName = "auth"
-)
-
 // Server implements the operations exposed in the profobuf definitions for the gRPC server.
 type Server struct {
 	UnimplementedWireguardRPCServer
@@ -233,7 +229,7 @@ func (s *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 }
 
 func (s *Server) authResult(ctx context.Context) *grpcauth.AuthResult {
-	auth, err := grpcauth.GetAuthResult(ctx, authKeyName)
+	auth, err := grpcauth.GetAuthResult(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -242,7 +238,6 @@ func (s *Server) authResult(ctx context.Context) *grpcauth.AuthResult {
 
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
 func NewServer(config *ServerConfig) (*grpc.Server, error) {
-
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
 	cred := credentials.NewTLS(config.TLSConfig)
 	authority := &grpcauth.Authority{Logger: config.Logger.Logger}

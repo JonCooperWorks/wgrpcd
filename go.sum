@@ -36,6 +36,8 @@ github.com/joncooperworks/grpcauth v0.0.0-20201206135002-5f35e89ae00c h1:HJTzNTj
 github.com/joncooperworks/grpcauth v0.0.0-20201206135002-5f35e89ae00c/go.mod h1:LagVlryMxWwDmrsrDznhx7v8Ue+PHeZDtA2jKFW6seQ=
 github.com/joncooperworks/grpcauth v0.0.0-20201206140156-8d6224fee179 h1:vjx3JNrXrvuD6sxjIEHfKqalFLG0BD27Qsgtdfujm5M=
 github.com/joncooperworks/grpcauth v0.0.0-20201206140156-8d6224fee179/go.mod h1:LagVlryMxWwDmrsrDznhx7v8Ue+PHeZDtA2jKFW6seQ=
+github.com/joncooperworks/grpcauth v0.0.0-20201206141648-088fb38c744a h1:QdZvVGnQBRU3r1IHE5Qgi/Ty/F/hK0a+UR8Gs5qHBZs=
+github.com/joncooperworks/grpcauth v0.0.0-20201206141648-088fb38c744a/go.mod h1:LagVlryMxWwDmrsrDznhx7v8Ue+PHeZDtA2jKFW6seQ=
 github.com/jsimonetti/rtnetlink v0.0.0-20190606172950-9527aa82566a/go.mod h1:Oz+70psSo5OFh8DBl0Zv2ACw7Esh6pPUphlvZG9x7uw=
 github.com/jsimonetti/rtnetlink v0.0.0-20200117123717-f846d4f6c1f4 h1:nwOc1YaOrYJ37sEBrtWZrdqzK22hiJs3GpDmP3sR2Yw=
 github.com/jsimonetti/rtnetlink v0.0.0-20200117123717-f846d4f6c1f4/go.mod h1:WGuG/smIU4J/54PblvSbh+xvCZmpJnFgr3ds6Z55XMQ=
