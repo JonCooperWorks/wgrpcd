@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"path"
 
+	"github.com/joncooperworks/grpcauth"
 	"github.com/joncooperworks/wgrpcd"
 )
 
@@ -82,7 +83,6 @@ func main() {
 	}
 
 	if *oauth2Provider != "" {
-
 		oauth2DomainURL, err := url.Parse(*oauth2Domain)
 		if err != nil {
 			log.Fatalf("invalid auth0 domain: %v", err)
@@ -94,7 +94,7 @@ func main() {
 
 		switch *oauth2Provider {
 		case "auth0":
-			auth0 := &wgrpcd.Auth0{
+			auth0 := &grpcauth.Auth0M2M{
 				Domain:        oauth2DomainURL,
 				APIIdentifier: *oauth2APIIdentifier,
 				JWKSURL:       jwksURL,
@@ -102,7 +102,7 @@ func main() {
 			config.AuthFunc = auth0.AuthFunc
 
 		case "aws":
-			awsCognito := &wgrpcd.AWSCognito{
+			awsCognito := &grpcauth.AWSCognitoM2M{
 				Domain:        oauth2DomainURL,
 				APIIdentifier: *oauth2APIIdentifier,
 				JWKSURL:       jwksURL,

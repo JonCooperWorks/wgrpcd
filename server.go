@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/joncooperworks/grpcauth"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,6 +14,10 @@ import (
 
 const (
 	maxPort = 65535
+)
+
+const (
+	authKeyName = "auth"
 )
 
 // Server implements the operations exposed in the profobuf definitions for the gRPC server.
@@ -227,14 +232,12 @@ func (s *Server) Devices(ctx context.Context, request *DevicesRequest) (*Devices
 	return response, nil
 }
 
-func (s *Server) authResult(ctx context.Context) *AuthResult {
-	k := authContextKey(authKeyName)
-	v := ctx.Value(k)
-	if v == nil {
-		panic("there should always be an AuthResult on an authenticated handler")
+func (s *Server) authResult(ctx context.Context) *grpcauth.AuthResult {
+	auth, err := grpcauth.GetAuthResult(ctx, authKeyName)
+	if err != nil {
+		panic(err)
 	}
-
-	return v.(*AuthResult)
+	return auth
 }
 
 // NewServer returns a wgrpcd instance configured to use a gRPC server with TLSv1.3.
@@ -242,7 +245,7 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
 	cred := credentials.NewTLS(config.TLSConfig)
-	authority := &Authority{Logger: config.Logger}
+	authority := &grpcauth.Authority{Logger: config.Logger.Logger}
 
 	if config.AuthFunc != nil {
 		authority.IsAuthenticated = config.AuthFunc

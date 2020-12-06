@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 
+	"github.com/joncooperworks/grpcauth"
 	"github.com/joncooperworks/wgrpcd"
 	"google.golang.org/grpc"
 )
@@ -52,7 +53,7 @@ func main() {
 	var opts []grpc.DialOption
 	switch *oauth2Provider {
 	case "auth0":
-		creds := wgrpcd.Auth0ClientCredentials(
+		creds := grpcauth.Auth0M2MClientCredentials(
 			context.Background(),
 			*clientID,
 			*clientSecret,
@@ -62,7 +63,7 @@ func main() {
 		opts = append(opts, creds)
 
 	case "aws":
-		creds := wgrpcd.AWSCognitoClientCredentials(
+		creds := grpcauth.AWSCognitoAppClientCredentials(
 			context.Background(),
 			*clientID,
 			*clientSecret,

@@ -3,6 +3,7 @@ package wgrpcd
 import (
 	"crypto/tls"
 
+	"github.com/joncooperworks/grpcauth"
 	"google.golang.org/grpc"
 )
 
@@ -10,7 +11,7 @@ import (
 type ServerConfig struct {
 	TLSConfig      *tls.Config
 	CACertFilename string
-	AuthFunc       AuthFunc
+	AuthFunc       grpcauth.AuthFunc
 	Logger         Logger
 }
 

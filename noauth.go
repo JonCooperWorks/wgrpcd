@@ -3,13 +3,14 @@ package wgrpcd
 import (
 	"time"
 
+	"github.com/joncooperworks/grpcauth"
 	"google.golang.org/grpc/metadata"
 )
 
-// NoAuth always returns an AuthResult with all permissions attached.
+// NoAuth always returns an grpcauth.AuthResult with all permissions attached.
 // Use this to use wgrpcd with only mTLS client certifcate auth.
 // mTLS client certifcate auth is sufficient if wgrpcd and its client(s) are on the same server.
-func NoAuth(md metadata.MD) (*AuthResult, error) {
+func NoAuth(md metadata.MD) (*grpcauth.AuthResult, error) {
 	permissions := []string{
 		PermissionChangeListenPort,
 		PermissionCreatePeer,
@@ -18,7 +19,7 @@ func NoAuth(md metadata.MD) (*AuthResult, error) {
 		PermissionListDevices,
 		PermissionRemovePeer,
 	}
-	return &AuthResult{
+	return &grpcauth.AuthResult{
 		ClientIdentifier: "mTLS",
 		Timestamp:        time.Now(),
 		Permissions:      permissions,
