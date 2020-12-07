@@ -251,7 +251,7 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 
 	rpcServer := grpc.NewServer(
 		grpc.Creds(cred),
-		grpc.UnaryInterceptor(authority.UnaryInterceptor),
+		grpc.UnaryInterceptor(authority.UnaryServerInterceptor),
 	)
 	RegisterWireguardRPCServer(rpcServer, &Server{logger: config.Logger})
 	return rpcServer, nil
