@@ -112,8 +112,6 @@ func main() {
 		default:
 			log.Fatalf("Invalid -openid-provider %s. Allowed: (aws, auth0)", *oauth2Provider)
 		}
-	} else {
-		config.PermissionFunc = grpcauth.NoPermissions
 	}
 
 	server, err := wgrpcd.NewServer(config)
