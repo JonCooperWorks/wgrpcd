@@ -240,14 +240,15 @@ func (s *Server) authResult(ctx context.Context) *grpcauth.AuthResult {
 func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	// Create a new TLS credentials based on the TLS configuration and return a gRPC server configured with this.
 	cred := credentials.NewTLS(config.TLSConfig)
-	authority := &grpcauth.Authority{Logger: config.Logger.Logger}
 
+	var authFunc grpcauth.AuthFunc
 	if config.AuthFunc != nil {
-		authority.IsAuthenticated = config.AuthFunc
+		authFunc = config.AuthFunc
 	} else {
 		config.Logger.Printf("WARNING: running wgrpcd using only client certificate auth")
-		authority.IsAuthenticated = NoAuth
+		authFunc = NoAuth
 	}
+	authority := grpcauth.NewAuthority(authFunc, nil)
 
 	rpcServer := grpc.NewServer(
 		grpc.Creds(cred),
