@@ -242,13 +242,15 @@ func NewServer(config *ServerConfig) (*grpc.Server, error) {
 	cred := credentials.NewTLS(config.TLSConfig)
 
 	var authFunc grpcauth.AuthFunc
+	var permissionFunc grpcauth.PermissionFunc
 	if config.AuthFunc != nil {
 		authFunc = config.AuthFunc
 	} else {
 		config.Logger.Printf("WARNING: running wgrpcd using only client certificate auth")
 		authFunc = NoAuth
+		permissionFunc = grpcauth.NoPermissions
 	}
-	authority := grpcauth.NewAuthority(authFunc, nil)
+	authority := grpcauth.NewAuthority(authFunc, permissionFunc)
 
 	rpcServer := grpc.NewServer(
 		grpc.Creds(cred),
