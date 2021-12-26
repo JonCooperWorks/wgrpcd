@@ -23,6 +23,7 @@ type WireguardRPCClient interface {
 	RemovePeer(ctx context.Context, in *RemovePeerRequest, opts ...grpc.CallOption) (*RemovePeerResponse, error)
 	ListPeers(ctx context.Context, in *ListPeersRequest, opts ...grpc.CallOption) (*ListPeersResponse, error)
 	Devices(ctx context.Context, in *DevicesRequest, opts ...grpc.CallOption) (*DevicesResponse, error)
+	Import(ctx context.Context, in *ImportRequest, opts ...grpc.CallOption) (*ImportResponse, error)
 }
 
 type wireguardRPCClient struct {
@@ -87,6 +88,15 @@ func (c *wireguardRPCClient) Devices(ctx context.Context, in *DevicesRequest, op
 	return out, nil
 }
 
+func (c *wireguardRPCClient) Import(ctx context.Context, in *ImportRequest, opts ...grpc.CallOption) (*ImportResponse, error) {
+	out := new(ImportResponse)
+	err := c.cc.Invoke(ctx, "/wgrpcd.WireguardRPC/Import", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WireguardRPCServer is the server API for WireguardRPC service.
 // All implementations must embed UnimplementedWireguardRPCServer
 // for forward compatibility
@@ -97,6 +107,7 @@ type WireguardRPCServer interface {
 	RemovePeer(context.Context, *RemovePeerRequest) (*RemovePeerResponse, error)
 	ListPeers(context.Context, *ListPeersRequest) (*ListPeersResponse, error)
 	Devices(context.Context, *DevicesRequest) (*DevicesResponse, error)
+	Import(context.Context, *ImportRequest) (*ImportResponse, error)
 	mustEmbedUnimplementedWireguardRPCServer()
 }
 
@@ -121,6 +132,9 @@ func (UnimplementedWireguardRPCServer) ListPeers(context.Context, *ListPeersRequ
 }
 func (UnimplementedWireguardRPCServer) Devices(context.Context, *DevicesRequest) (*DevicesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Devices not implemented")
+}
+func (UnimplementedWireguardRPCServer) Import(context.Context, *ImportRequest) (*ImportResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Import not implemented")
 }
 func (UnimplementedWireguardRPCServer) mustEmbedUnimplementedWireguardRPCServer() {}
 
@@ -243,6 +257,24 @@ func _WireguardRPC_Devices_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WireguardRPC_Import_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WireguardRPCServer).Import(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wgrpcd.WireguardRPC/Import",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WireguardRPCServer).Import(ctx, req.(*ImportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _WireguardRPC_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "wgrpcd.WireguardRPC",
 	HandlerType: (*WireguardRPCServer)(nil),
@@ -270,6 +302,10 @@ var _WireguardRPC_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Devices",
 			Handler:    _WireguardRPC_Devices_Handler,
+		},
+		{
+			MethodName: "Import",
+			Handler:    _WireguardRPC_Import_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

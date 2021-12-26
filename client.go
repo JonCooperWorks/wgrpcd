@@ -217,6 +217,22 @@ func (c *Client) ListPeers(ctx context.Context, deviceName string) ([]*Peer, err
 	return response.GetPeers(), nil
 }
 
+// ImportPeers creates a new peer from a list of peers.
+func (c *Client) ImportPeers(ctx context.Context, deviceName string, peers []*ImportedPeer) error {
+	c.checkConnection()
+
+	request := &ImportRequest{
+		DeviceName: deviceName,
+		Peers: peers,
+	}
+	_, err := c.wireguardClient.Import(ctx, request)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Devices returns all Wireguard interfaces controllable by wgrpcd.
 func (c *Client) Devices(ctx context.Context) ([]string, error) {
 	c.checkConnection()

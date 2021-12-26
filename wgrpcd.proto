@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package wgrpcd;
+option go_package = "github.com/joncooperworks/wgrpcd";
 
 service WireguardRPC {
     rpc ChangeListenPort(ChangeListenPortRequest) returns (ChangeListenPortResponse) {}
@@ -9,6 +10,7 @@ service WireguardRPC {
     rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse) {}
     rpc ListPeers(ListPeersRequest) returns (ListPeersResponse) {}
     rpc Devices(DevicesRequest) returns (DevicesResponse) {}
+    rpc Import(ImportRequest) returns (ImportResponse) {}
 }
 
 message ChangeListenPortRequest {
@@ -75,3 +77,15 @@ message DevicesRequest {}
 message DevicesResponse {
     repeated string devices = 1;
 }
+
+message ImportedPeer {
+    string publicKey = 1;
+    repeated string allowedIPs = 2;
+}
+
+message ImportRequest {
+    repeated ImportedPeer peers = 1;
+    string deviceName = 2;
+}
+
+message ImportResponse {}
